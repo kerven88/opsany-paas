@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "opsany-paas-mcp-server.fullname" . }}
+  labels:
+    {{- include "opsany-paas-mcp-server.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "opsany-paas-mcp-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "opsany-paas-mcp-server.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          volumeMounts:
+            - name: opsany-paas-mcp-server-config
+              mountPath: /opt/opsany/opsany-mcp-server/config/config.yaml
+              subPath: config.yaml
+            - name: opsany-paas-mcp-server-supervisor
+              mountPath: /etc/supervisord.d/mcp.ini
+              subPath: mcp.ini
+            - name: opsany-logs
+              mountPath: /opt/opsany/logs
+            - name: localtime
+              mountPath: /etc/localtime
+              readOnly: true
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: paas-mcp-server
+              containerPort: 8020
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: opsany-paas-mcp-server-config
+          secret:
+            secretName: opsany-paas-mcp-server-config
+            items:
+            - key: config.yaml
+              path: config.yaml
+        - name: opsany-paas-mcp-server-supervisor
+          secret:
+            secretName: opsany-paas-mcp-server-supervisor
+            items:
+            - key: mcp.ini
+              path: mcp.ini
+        - name: opsany-logs
+          persistentVolumeClaim:
+            claimName: opsany-logs
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+            type: File

@@ -1,5 +1,6 @@
 export default {
 	document_title: "Login {'|'} Digital Operations and Maintenance Platform",
+	demo_tip:'[Demo User: demo, Password: 123456.coM] Due to permission restrictions, the demo user can only view some features. For full functionality, please deploy the community edition privately.',
 	header_help: 'Help Center',
 	login_welcome: 'Welcome to Digital Operations Platform',
 	login_btn: 'Login',

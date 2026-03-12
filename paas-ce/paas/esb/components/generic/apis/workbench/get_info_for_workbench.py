@@ -15,7 +15,7 @@ class GetInfoForWorkbench(Component):
 
     ### 功能描述
 
-    获取Agent的文件状态信息
+    获取Agent的文件状态信息(暂未找到API)
 
     ### 请求参数
     {{ common_args_desc }}
@@ -32,7 +32,7 @@ class GetInfoForWorkbench(Component):
         "message": "获取相关信息成功"
     }
     ```
-    """#
+    """
 
     # 组件所属系统的系统名
     sys_name = configs.SYSTEM_NAME

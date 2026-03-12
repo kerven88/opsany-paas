@@ -1,5 +1,5 @@
 # 前端项目
-#### 项目采用vue3.5.x + vite7.x + ant-design-vue4.2.x + tailwindcss4.x开发，node.js建议使用v22.21以上的版本。前端核心功能特别依赖于以下浏览器版本：
+#### 项目采用vue3.5.x + vite7.x + ant-design-vue4.2.x + tailwindcss4.x开发，node.js建议使用v20.20.0以上的版本。前端核心功能特别依赖于以下浏览器版本：
 - Chrome 111(发布于2023年03月)
 - Safari 16.4(发布于2023年03月)
 - Firefox 128(发布于2024年07月)

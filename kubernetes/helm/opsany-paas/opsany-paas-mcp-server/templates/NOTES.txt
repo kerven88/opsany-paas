@@ -1,0 +1,4 @@
+1. Get the application URL by running these commands:
+  export SERVICE_IP=$(kubectl get svc -n opsany)
+  echo http://$SERVICE_IP:{{ .Values.service.port }}
+  echo "Visit http://127.0.0.1:8020 to use your application"

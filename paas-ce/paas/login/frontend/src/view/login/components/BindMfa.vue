@@ -70,6 +70,7 @@ import { message } from "ant-design-vue";
 import { doLogin } from "@/api/login.js";
 import config from "@/config/defaultSetting";
 import { useI18n } from "vue-i18n";
+import { isValidUrl } from "@/utils/util.js";
 
 const { loginFormData } = defineProps({
 	loginFormData: {
@@ -101,7 +102,9 @@ const handleClick = async () => {
 	try {
 		loading.value = true;
 		const { data = {} } = await doLogin(params);
-		window.location.href = config.baseUrl + (data.c_url == "/" ? "" : data.c_url);
+		const data_curl = data.c_url?.replace(/^\/+/, "") || '';
+		const url = isValidUrl(data.c_url) ? data.c_url : config.baseUrl + data_curl;
+		window.location.href = url;
 	} catch (error) {
 		console.log(error);
 	} finally {

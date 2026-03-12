@@ -15,7 +15,7 @@ class GetUploadFile(Component):
 
     ### 功能描述
 
-    获取模型实例关联模型实例数据
+    获取模型实例关联模型实例数据(暂未找到API)
 
     ### 请求参数
       {{ common_args_desc }}

@@ -166,8 +166,9 @@ esb_install(){
     shell_log "Config esb Service"
     # ESB Config
     ESB_SECRET_KEY=$(cat /dev/urandom | LC_ALL=C tr -dc 'a-zA-Z0-9' | head -c 50)
+    sed -i "s/LOCAL_IP/opsany-paas-openresty/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/PAAS_LOGIN_IP/opsany-paas-login/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
-    sed -i "s/PAAS_PAAS_IP/opsany-paas-openresty/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
+    sed -i "s/PAAS_PAAS_IP/opsany-paas-paas/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/REDIS_SERVER_IP/${REDIS_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/REDIS_SERVER_PASSWORD/${REDIS_SERVER_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb

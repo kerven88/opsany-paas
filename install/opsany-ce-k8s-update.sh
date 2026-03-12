@@ -86,6 +86,7 @@ login_update(){
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-paas/login/settings_production.py.login
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/login/settings_production.py.login
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/login/settings_production.py.login
+    sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-paas/login/settings_production.py.login
     sed -i "s/MYSQL_OPSANY_PASSWORD/${MYSQL_OPSANY_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-paas/login/settings_production.py.login
     /bin/cp ${INSTALL_PATH}/conf/opsany-paas/login/settings_production.py.login ${INSTALL_PATH}/kubernetes/helm/opsany-paas/opsany-paas-login/
     /bin/cp ${INSTALL_PATH}/conf/opsany-paas/login/login.ini ${INSTALL_PATH}/kubernetes/helm/opsany-paas/opsany-paas-login/
@@ -119,11 +120,13 @@ esb_update(){
     UPDATE_VERSION=$1
     /bin/cp conf/opsany-paas/esb/esb.ini ${INSTALL_PATH}/conf/opsany-paas/esb/esb.ini
     /bin/cp conf/opsany-paas/esb/settings_production.py.esb ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
+    sed -i "s/LOCAL_IP/opsany-paas-openresty/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/PAAS_PAAS_IP/${PAAS_PAAS_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/REDIS_SERVER_IP/${REDIS_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/REDIS_SERVER_PASSWORD/${REDIS_SERVER_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
+    sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/MYSQL_OPSANY_PASSWORD/${MYSQL_OPSANY_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     /bin/cp ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb ${INSTALL_PATH}/kubernetes/helm/opsany-paas/opsany-paas-esb/
     /bin/cp ${INSTALL_PATH}/conf/opsany-paas/esb/esb.ini ${INSTALL_PATH}/kubernetes/helm/opsany-paas/opsany-paas-esb/

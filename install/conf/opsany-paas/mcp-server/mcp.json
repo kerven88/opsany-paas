@@ -1,0 +1,12 @@
+{
+    "mcpServers": {
+      "opsany-mcp-server": {
+        "url": "http://DOMAIN_NAME:8020/sse",
+        "headers": {
+          "username": "admin",
+          "user-api-token": "Please modify here",
+          "mcp-auth-token": "MCP_AUTH_TOKEN"
+          }
+      }
+    }
+}

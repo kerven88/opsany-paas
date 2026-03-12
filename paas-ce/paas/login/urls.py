@@ -41,7 +41,7 @@ base_urlpatterns = [
     # 登录页面
     # path('', views.LoginView.as_view()),
     path('', login_views.LoginIndexView.as_view()),
-    
+    path('auth/<str:auth_name>/<str:domain_name>/', login_views.LoginIndexView.as_view()),
     path('logout/', views.LogoutView.as_view()),
     # 用户管理
     path('accounts/', include("bkaccount.urls")),
@@ -59,6 +59,7 @@ base_urlpatterns = [
     path('api/v3/check-password/', login_views.CheckPasswordView.as_view()),
     path('api/v3/auth-config/', login_views.AuthConfigView.as_view()),
     path('api/v3/user-login-unlock/', login_views.UserLoginUnlockView.as_view()),
+    path('api/v3/api-token/', login_views.APITokenView.as_view()),
     # auth_name: qw oauth sso idaas iam ad_by_oauth ...
     # domain: 登录域
     path('api/v3/<str:auth_name>/login/<str:domain>/', login_views.UserExternalLoginView.as_view()),

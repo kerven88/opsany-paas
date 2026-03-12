@@ -45,7 +45,7 @@ CREATE TABLE `esb_channel` (
   UNIQUE KEY `path` (`path`) USING BTREE,
   KEY `component_system_id_75db1515b99d21dc_fk_esb_component_system_id` (`component_system_id`) USING BTREE,
   CONSTRAINT `component_system_id_75db1515b99d21dc_fk_esb_component_system_id` FOREIGN KEY (`component_system_id`) REFERENCES `esb_component_system` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=364 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=376 DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=COMPACT;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -57,8 +57,8 @@ LOCK TABLES `esb_channel` WRITE;
 INSERT INTO `esb_channel` VALUES
 (1,'获取管控平台手动添加的Agent信息','/control/get_manual_add_agent/','','generic.control.get_manual_add_agent',1,'2020-04-22 15:36:51','2020-04-22 15:36:51',8,NULL,2,'','get_manual_add_agent',0,0,'',0,''),
 (2,'通过控制器的name获取控制器信息','/control/get_controller/','','generic.control.get_controller',1,'2020-04-22 15:37:28','2020-04-22 15:37:28',8,NULL,2,'','get_controller',0,0,'',0,''),
-(3,'获取所有主机','/cmdb/get_all_host/','','generic.cmdb.get_all_host',1,'2020-04-22 15:54:14','2020-04-22 15:54:14',7,NULL,2,'','get_all_host',0,0,'',0,''),
-(5,'更新节点的Agent情况','/cmdb/update_agent_state/','','generic.cmdb.update_agent_state',1,'2020-04-22 15:56:24','2020-04-22 15:56:24',7,NULL,1,'','update_agent_state',0,0,'',0,''),
+(3,'获取所有主机','/cmdb/get_all_host/','','generic.cmdb.get_all_host',1,'2026-02-05 15:01:34','2020-04-22 15:54:14',7,60,2,'','get_all_host',0,0,'',0,''),
+(5,'更新节点的Agent情况','/cmdb/update_agent_state/','','generic.cmdb.update_agent_state',1,'2025-12-30 15:43:36','2020-04-22 15:56:24',7,300,1,'','update_agent_state',0,0,'',0,''),
 (6,'从管控平台导入Grains信息','/cmdb/import_grains_from_control/','','generic.cmdb.import_grains_from_control',1,'2020-04-22 15:57:28','2020-04-22 15:57:28',7,NULL,1,'','import_grains_from_control',0,0,'',0,''),
 (7,'获取实例树','/cmdb/get_inst_tree/','','generic.cmdb.get_inst_tree',1,'2020-04-22 16:23:16','2020-04-22 16:00:26',7,NULL,2,'','get_inst_tree',0,0,'',0,''),
 (8,'根据业务code查询节点情况','/cmdb/get_agent_by_business_code/','','generic.cmdb.get_agent_by_business_code',1,'2020-04-22 16:24:01','2020-04-22 16:24:01',7,NULL,2,'','get_agent_by_business_code',0,0,'',0,''),
@@ -220,8 +220,8 @@ INSERT INTO `esb_channel` VALUES
 (175,'批量获取实例关联指定模型数据v2(资源授权认证)','/cmdb/get_link_model_data_v2/','','generic.cmdb.get_link_model_data_v2',1,'2022-12-15 22:43:21','2022-12-15 22:43:21',7,NULL,1,'','get_link_model_data_v2',0,0,'',0,''),
 (176,'同步管控新建主机v2(资源授权认证)','/cmdb/import_server_from_control_v2/','','generic.cmdb.import_server_from_control_v2',1,'2022-12-15 22:45:29','2022-12-15 22:45:29',7,NULL,1,'','import_server_from_control_v2',0,0,'',0,''),
 (177,'从管控平台导入Grains信息v2(资源授权认证)','/cmdb/import_grains_from_control_v2/','','generic.cmdb.import_grains_from_control_v2',1,'2022-12-15 22:47:03','2022-12-15 22:47:03',7,NULL,1,'','import_grains_from_control_v2',0,0,'',0,''),
-(178,'获取所有主机v2(资源授权认证)','/cmdb/get_all_host_v2/','','generic.cmdb.get_all_host_v2',1,'2022-12-15 22:48:07','2022-12-15 22:48:07',7,NULL,2,'','get_all_host_v2',0,0,'',0,''),
-(179,'更新节点的Agent情况v2(资源授权认证)','/cmdb/update_agent_state_v2/','','generic.cmdb.update_agent_state_v2',1,'2022-12-15 22:49:18','2022-12-15 22:49:18',7,NULL,1,'','update_agent_state_v2',0,0,'',0,''),
+(178,'获取所有主机v2(资源授权认证)','/cmdb/get_all_host_v2/','','generic.cmdb.get_all_host_v2',1,'2026-02-05 15:01:19','2022-12-15 22:48:07',7,60,2,'','get_all_host_v2',0,0,'',0,''),
+(179,'更新节点的Agent情况v2(资源授权认证)','/cmdb/update_agent_state_v2/','','generic.cmdb.update_agent_state_v2',1,'2025-12-30 15:43:45','2022-12-15 22:49:18',7,300,1,'','update_agent_state_v2',0,0,'',0,''),
 (180,'获取基础监控服务拨测汇总数据','/monitor/get_service_check_from_monitor/','','generic.monitor.get_service_check_from_monitor',1,'2022-12-16 18:01:47','2022-12-16 18:01:47',12,NULL,2,'','get_service_check_from_monitor',0,0,'',0,''),
 (181,'根据模型code获取CMDB的数据v2(资源授权认证)','/cmdb/get_cmdb_data_by_model_code_v2/','','generic.cmdb.get_cmdb_data_by_model_code_v2',1,'2022-12-16 22:24:06','2022-12-16 22:24:06',7,NULL,2,'','get_cmdb_data_by_model_code_v2',0,0,'',0,''),
 (182,'获取应用大屏信息v2(资源授权认证)','/cmdb/get_application_screen_info_v2/','','generic.cmdb.get_application_screen_info_v2',1,'2022-12-20 11:34:57','2022-12-20 11:34:57',7,NULL,2,'','get_application_screen_info_v2',0,0,'',0,''),
@@ -338,7 +338,6 @@ INSERT INTO `esb_channel` VALUES
 (295,'获取当前应用下制品库资源统计','/repo/get_home_page/','','generic.repo.get_home_page',1,'2024-05-11 12:00:16','2024-05-11 12:00:16',24,NULL,2,'','get_home_page',0,0,'',0,''),
 (296,'获取当前应用下的制品库和公共仓库','/repo/get_repository_pagination/','','generic.repo.get_repository_pagination',1,'2024-05-11 12:00:58','2024-05-11 12:00:58',24,NULL,2,'','get_repository_pagination',0,0,'',0,''),
 (297,'获取全部应用','/devops/get_applications/','','generic.devops.get_applications',1,'2024-05-15 08:48:43','2024-05-15 08:48:43',14,NULL,2,'','get_applications',0,0,'',0,''),
-(298,'同步应用平台全部应用','/code/sync_devops_application/','','generic.code.sync_devops_application',1,'2024-05-15 14:30:33','2024-05-15 14:30:33',27,NULL,2,'','sync_devops_application',0,0,'',0,''),
 (299,'获取已关联仓库','/code/app_related_projects/','','generic.code.app_related_projects',1,'2024-05-15 14:31:31','2024-05-15 14:31:31',27,NULL,2,'','app_related_projects',0,0,'',0,''),
 (300,'获取未关联仓库','/code/app_unrelated_projects/','','generic.code.app_unrelated_projects',1,'2024-05-15 14:32:33','2024-05-15 14:32:33',27,NULL,2,'','app_unrelated_projects',0,0,'',0,''),
 (301,'关联项目','/code/relate_project/','','generic.code.relate_project',1,'2024-05-15 14:33:16','2024-05-15 14:33:16',27,NULL,1,'','relate_project',0,0,'',0,''),
@@ -403,7 +402,19 @@ INSERT INTO `esb_channel` VALUES
 (360,'根据Prom执行指标查询语句并获取到数据','/control/prom_run_query/','','generic.control.prom_run_query',1,'2025-10-25 16:47:47','2025-10-25 16:47:47',8,120,2,'','prom_run_query',0,0,'',0,''),
 (361,'Zabbix告警事件的操作','/control/monitor_event_acknowledge/','','generic.control.monitor_event_acknowledge',1,'2025-12-01 16:39:43','2025-12-01 16:39:43',8,NULL,1,'','monitor_event_acknowledge',0,0,'',0,''),
 (362,'获取主机告警事件操作详情','/control/monitor_event_info/','','generic.control.monitor_event_info',1,'2025-12-01 19:46:24','2025-12-01 19:46:24',8,NULL,2,'','monitor_event_info',0,0,'',0,''),
-(363,'根据指标表达式获取相关数据','/control/post_metric_expr_get_value/','','generic.control.post_metric_expr_get_value',1,'2025-12-09 11:01:37','2025-12-09 11:01:37',8,120,1,'','post_metric_expr_get_value',0,0,'',0,'');
+(363,'根据指标表达式获取相关数据','/control/post_metric_expr_get_value/','','generic.control.post_metric_expr_get_value',1,'2025-12-09 11:01:37','2025-12-09 11:01:37',8,120,1,'','post_metric_expr_get_value',0,0,'',0,''),
+(364,'扫描IP端口服务','/control/subnet_scan_ip_port/','','generic.control.subnet_scan_ip_port',1,'2026-01-06 18:03:34','2026-01-06 18:03:34',8,60,1,'','subnet_scan_ip_port',0,0,'',0,''),
+(365,'获取扫描IP端口服务结果数据','/control/subnet_scan_ip_port_result/','','generic.control.subnet_scan_ip_port_result',1,'2026-01-06 18:03:59','2026-01-06 18:03:59',8,60,2,'','subnet_scan_ip_port_result',0,0,'',0,''),
+(366,'获取工单实例列表','/workbench/get_work_order_inst/','','generic.workbench.get_work_order_inst',1,'2026-01-23 16:34:08','2026-01-23 16:34:08',9,90,2,'','get_work_order_inst',0,0,'',0,''),
+(367,'获取容器平台资源','/k8s/get_k8s_resource_v2/','','generic.k8s.get_k8s_resource_v2',1,'2026-03-03 16:01:09','2026-03-03 16:01:09',18,NULL,2,'','get_k8s_resource_v2',0,0,'',0,''),
+(368,'获取容器平台集群','/k8s/get_k8s_cluster/','','generic.k8s.get_k8s_cluster',1,'2026-03-03 16:03:40','2026-03-03 16:03:40',18,NULL,2,'','get_k8s_cluster',0,0,'',0,''),
+(369,'同步容器平台资源','/cmdb/update_k8s_resource/','','generic.cmdb.update_k8s_resource',1,'2026-03-03 18:12:45','2026-03-03 18:12:45',7,600,2,'','update_k8s_resource',0,0,'',0,''),
+(370,'同步容器平台集群','/cmdb/update_k8s_cluster/','','generic.cmdb.update_k8s_cluster',1,'2026-03-03 18:13:23','2026-03-03 18:13:23',7,600,2,'','update_k8s_cluster',0,0,'',0,''),
+(371,'根据脚本ID执行脚本','/job/run_script_by_id/','','generic.job.run_script_by_id',1,'2026-03-05 20:17:39','2026-03-05 20:17:39',4,60,1,'','run_script_by_id',0,0,'',0,''),
+(372,'获取工具市场中的作业或脚本','/job/get_tool_market_list/','','generic.job.get_tool_market_list',1,'2026-03-05 20:18:23','2026-03-05 20:18:23',4,60,2,'','get_tool_market_list',0,0,'',0,''),
+(373,'获取作业或脚本执行结果','/job/get_run_result_by_log_id/','','generic.job.get_run_result_by_log_id',1,'2026-03-05 21:03:13','2026-03-05 21:03:13',4,60,2,'','get_run_result_by_log_id',0,0,'',0,''),
+(374,'根据作业ID执行作业','/job/run_job_by_id/','','generic.job.run_job_by_id',1,'2026-03-06 14:47:39','2026-03-06 14:47:39',4,60,1,'','run_job_by_id',0,0,'',0,''),
+(375,'根据主机和脚本执行任务','/job/run_script_by_script/','','generic.job.run_script_by_script',1,'2026-03-07 17:12:38','2026-03-07 17:12:38',4,60,1,'','run_script_by_script',0,0,'',0,'');
 /*!40000 ALTER TABLE `esb_channel` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -416,4 +427,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-10 12:25:34
+-- Dump completed on 2026-03-07 20:01:43

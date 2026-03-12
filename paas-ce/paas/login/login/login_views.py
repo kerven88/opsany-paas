@@ -15,7 +15,7 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.shortcuts import resolve_url, render
 from django.views import View
 
-import settings
+from django.conf import settings
 from bkaccount.encryption import encrypt, salt, decrypt
 from bkaccount.models import BkUser, BkToken, Loignlog, UserAuthToken
 from common.mixins.exempt import LoginExemptMixin, CsrfExemptMixin, CsrfAndLoginExemptMixin
@@ -49,7 +49,7 @@ class AuthConfigView(CsrfAndLoginExemptMixin, View):
                 data = []
         if not data and auth_type == "all":
             data = default_data
-        
+
         return JsonResponse(success(SuccessStatusCode.OPERATION_SUCCESS, data))
 
 
@@ -66,14 +66,14 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
     BK_LOGIN_URL = str(settings.LOGIN_URL)
     # 允许误差时间，防止多台机器时间误差， 1分钟
     BK_TOKEN_OFFSET_ERROR_TIME = settings.BK_TOKEN_OFFSET_ERROR_TIME
-    
+
     def first_error_message(self, form):
         error_data = form.errors.as_data()
         error_data_list = list(error_data.items())
         error_message = error_data_list[0][1][0].message
         message = "{}".format(error_message)
         return message
-    
+
     def _check_white_list(self, username, request, auth_object):
         import ipaddress
         if username == "admin":
@@ -83,10 +83,10 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
             if not status:
                 return True, "Success"
             white_list = res_data.get("white_list") or ""
-            
+
             if not isinstance(res_data, dict):  return True, "Success"
             if res_data.get("enabled") is False: return True, "Success"
-            
+
             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
             if x_forwarded_for:
                 ip = x_forwarded_for.split(',')[0]  # 第一个IP是原始客户端
@@ -106,18 +106,18 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
                     # networks.append(entry)
             ip_obj = ipaddress.ip_address(ip)
             if any(
-                (isinstance(net, ipaddress.IPv4Network) and (ip_obj in net)) or
-                (isinstance(net, ipaddress.IPv6Network) and (ip_obj in net)) or
-                (isinstance(net, ipaddress.IPv4Address) and (ip_obj == net)) or
-                (isinstance(net, ipaddress.IPv6Address) and (ip_obj == net))
-                for net in networks
+                    (isinstance(net, ipaddress.IPv4Network) and (ip_obj in net)) or
+                    (isinstance(net, ipaddress.IPv6Network) and (ip_obj in net)) or
+                    (isinstance(net, ipaddress.IPv4Address) and (ip_obj == net)) or
+                    (isinstance(net, ipaddress.IPv6Address) and (ip_obj == net))
+                    for net in networks
             ):
                 return True, "Success"
             return False, "IP登录限制({}), 请联系管理员加入白名单!".format(ip)
         except Exception as e:
             logger.exception('Login _check_white_list, error: {}'.format(str(e)))
             return True, str(e)
-    
+
     def get_user(self, data, username):
         """
         {
@@ -152,9 +152,9 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
             if user:
                 user.delete()
             return None
-    
+
     def login_success_response(self, request, user_or_form, redirect_to, app_id, res_data=None):
-        
+
         if isinstance(user_or_form, AuthenticationForm):
             user = user_or_form.get_user()
             username = user_or_form.cleaned_data.get('username', '')
@@ -169,7 +169,7 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
         except:
             user.backend = "django.contrib.auth.backends.ModelBackend"
             auth_login(request, user)
-        
+
         bk_token, expire_time = self.get_bk_token(username)
         # response = HttpResponseRedirect(redirect_to)
         if not res_data:
@@ -189,25 +189,25 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
                             httponly=True)
         self.record_login_log(request, user, app_id, bk_token)
         return response
-    
+
     def login_success_redirect_response(self, request, user_or_form, redirect_to, app_id, res_data=None):
-        
+
         if isinstance(user_or_form, AuthenticationForm):
             user = user_or_form.get_user()
             username = user_or_form.cleaned_data.get('username', '')
         else:
             user = user_or_form
             username = user.username
-        
+
         if not self.is_safe_url(url=redirect_to, host=request.get_host()):
             redirect_to = resolve_url("/")
-        
+
         try:
             auth_login(request, user)
         except:
             user.backend = "django.contrib.auth.backends.ModelBackend"
             auth_login(request, user)
-        
+
         bk_token, expire_time = self.get_bk_token(username)
         # response = HttpResponseRedirect(redirect_to)
         if not res_data:
@@ -220,7 +220,7 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
                             httponly=True)
         self.record_login_log(request, user, app_id, bk_token)
         return response
-    
+
     def set_bk_token_invalid(self, request, response=None):
         """
         将登录票据设置为不合法
@@ -233,7 +233,7 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
             response.delete_cookie(self.BK_COOKIE_NAME, domain=settings.BK_COOKIE_DOMAIN)
             return response
         return None
-    
+
     def is_safe_url(self, url, host=None):
         """
         判断url是否与当前host的根域一致
@@ -269,7 +269,7 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
         host_domain = host.split(':')[0].split('.')[-2] if host else ''
         return ((not url_info.netloc or url_domain == host_domain) and
                 (not url_info.scheme or url_info.scheme in ['http', 'https']))
-    
+
     def get_bk_token(self, username):
         """
         生成用户的登录态
@@ -281,24 +281,24 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
         while not bk_token and retry_count < 5:
             now_time = int(time.time())
             expire_time = now_time + self.BK_COOKIE_AGE
-            plain_token = '%s|%s|%s' % (expire_time, username, salt(20))
+            plain_token = 'login|%s|%s|%s' % (expire_time, username, salt(20))
             bk_token = encrypt(plain_token)
             try:
-                BkToken.objects.create(token=bk_token)
+                BkToken.objects.create(token=bk_token, expire_time=datetime.fromtimestamp(expire_time), username=username, token_type="login")
             except Exception as error:
                 logger.exception('Login ticket failed to be saved during ticket generation, error: {}'.format(error))
                 # 循环结束前将bk_token置空后重新生成
                 bk_token = '' if retry_count < 4 else bk_token
             retry_count += 1
         return bk_token, datetime.fromtimestamp(expire_time, timezone.get_current_timezone())
-    
+
     def encrypt_cache_token(self, username):
         now_time = int(time.time())
         expire_time = now_time + self.MFA_CACHE_COOKIE_AGE
-        plain_token = '%s|%s|%s' % (expire_time, username, salt(50))
+        plain_token = 'cache_token|%s|%s|%s' % (expire_time, username, salt(50))
         bk_token = encrypt(plain_token)
         return bk_token, datetime.fromtimestamp(expire_time, timezone.get_current_timezone())
-    
+
     def decrypt_cache_token(self, cache_token):
         try:
             plain_bk_token = decrypt(cache_token)
@@ -317,7 +317,7 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
         if expire_time - now_time > self.BK_COOKIE_AGE:
             return False, "登录态有效期不合法, 请重新登录!"
         return True, "Success", token_info[1]
-    
+
     def login_ip_and_browser(self, request):
         host = request.get_host()
         login_browser = request.META.get('HTTP_USER_AGENT') or 'unknown'
@@ -329,7 +329,7 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
         except Exception:
             pass
         return login_ip, login_browser, host
-    
+
     def record_login_log(self, request, user, app_id, token=None):
         """
         记录用户登录日志
@@ -353,6 +353,15 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
 
 
 class LoginIndexView(BaseLoginView):
+    AUTH_TYPE_DICT = {
+        "wxwork": "3",
+        "oauth": "6",
+        "sso": "8",
+        "idaas": "9",
+        "iam": "10",
+        "dingtalk": "11",
+        "feishu": "12",
+    }
     def get_user(self, data, username):
         """
         {
@@ -387,16 +396,18 @@ class LoginIndexView(BaseLoginView):
             if user:
                 user.delete()
             return None
-    
-    def get(self, request):
+
+    def get(self, request, *args, **kwargs):
+        auth_name = kwargs.get("auth_name")
+        domain_name = kwargs.get("domain_name")
         params = request.GET.dict()
         c_url = params.get("c_url")
         is_from_logout = params.get("is_from_logout")
-        
+
         if (c_url and len(params) == 1) or (is_from_logout and len(params) == 1) or (not params):
             response = TemplateResponse(request, "login/login.html", {"auth_type": "1", "error": ""})
             return self.set_bk_token_invalid(request, response)
-        
+
         auth_type = params.get("auth_type")
         domain = params.get("domain")
         ad_domain = params.get("ad_domain")
@@ -404,12 +415,17 @@ class LoginIndexView(BaseLoginView):
         code = params.get("code")
         sso_code = params.get("sso_code")
         sso_sign = params.get("sso_sign")
+
+        if auth_name and domain_name:
+            auth_type = self.AUTH_TYPE_DICT.get(auth_name)
+            domain = domain_name
+
         auth_obj = None
         if (auth_type == "8") and sso_code and sso_sign:  # 8 SSO
             auth_obj = OpsAnyRbacUserAuth(domain=domain, auth_type=auth_type, sso_code=sso_code, sso_sign=sso_sign)
         elif auth_type == "3":  # 3 企业微信
             auth_obj = OpsAnyRbacUserAuth(auth_type=auth_type, code=code, app_id=appid, ad_domain=ad_domain)
-        elif auth_type == "6":  # 6 Oauth
+        elif auth_type in ["6", "11", "12"]:  # 6 Oauth 11 dingtalk  12 feishu
             auth_obj = OpsAnyRbacUserAuth(auth_type=auth_type, domain=domain, code=code)
         elif auth_type in ["9", "10"]:  # 9 10 IDAAS IAM
             auth_obj = OpsAnyRbacUserAuth(auth_type=auth_type, domain=domain, params=params)
@@ -425,13 +441,13 @@ class LoginIndexView(BaseLoginView):
                 msg = res.get("message") or "登录失败, 请联系管理员!"
                 logger.info(f"LoginIndexView.get.1: {auth_type}, {domain}, {params.keys()}, lock_msg: {msg}")
                 return render(request, "login/login.html", {"auth_type": auth_type, "error": msg})
-        
+
         else:
             msg = "暂不支持该登录方式!"
             logger.info(f"LoginIndexView.get.2: {auth_type}, {domain}, {params.keys()}, lock_msg: {msg}")
         response = TemplateResponse(request, "login/login.html", {"auth_type": "1", "error": msg})
         return self.set_bk_token_invalid(request, response)
-    
+
     # 暂时保留旧接口, 防止初始化相关脚本调用失败
     def post(self, request):
         return LoginV3View().post(request)
@@ -471,7 +487,7 @@ class LoginV3View(BaseLoginView):
                 setattr(query, k, v)
             query.save()
         return auth_token, now
-    
+
     def check_verify_code_and_login_lock(self, auth_object, username):
         auth_dict = auth_object.get_rbac_auth_config(username)
         mfa_days_enabled = auth_dict.get("mfa_days_enabled")
@@ -493,7 +509,7 @@ class LoginV3View(BaseLoginView):
             locking_times_config = timedelta(**d)
         except Exception as e:
             password_retry_times_config, password_retry_times_enabled, locking_times_config = 0, False, timedelta(hours=1)
-        
+
         show_mfa_days, show_verify_code, show_login_lock, while_show_verify_code, while_show_login_lock = False, False, False, False, False
         if mfa_days_enabled:
             show_mfa_days = True
@@ -503,7 +519,7 @@ class LoginV3View(BaseLoginView):
                 show_verify_code = True
             if verification_code_config <= error_count + 1:
                 while_show_verify_code = True  # 8:00 1:00    8:30
-        
+
         unlock_times = last_accessed_time + locking_times_config
         unlock_times_str = timezone.localtime(unlock_times).strftime("%Y-%m-%d %H:%M:%S")
         if password_retry_times_enabled and (unlock_times > timezone.now()):
@@ -514,7 +530,7 @@ class LoginV3View(BaseLoginView):
         if unlock_times < timezone.now():
             self.login_error_times(username, types="clean")
         return show_mfa_days, show_verify_code, show_login_lock, while_show_verify_code, while_show_login_lock, error_count, password_retry_times_enabled, password_retry_times_config, unlock_times_str
-    
+
     def post(self, request):
         login_ip, login_browser, host = self.login_ip_and_browser(request)
         # print(11111111111111, login_ip, login_browser, host)
@@ -525,7 +541,7 @@ class LoginV3View(BaseLoginView):
         # data["geetest_seccode"] = uuid.uuid4().hex
         # data["geetest_validate"] = uuid.uuid4().hex
         cache_token = data.get("cache_token")
-        
+
         # 正常登录
         redirect_field_name = 'c_url'
         redirect_to = data.get(redirect_field_name, "/")
@@ -541,6 +557,7 @@ class LoginV3View(BaseLoginView):
             username = username + "@" + domain
         auth_object = OpsAnyRbacUserAuth(auth_type=auth_type, username=username, password=password)
         status, message = self._check_white_list(username, request, auth_object)
+        # status, message = True, "Success"
         if not status:
             return JsonResponse(success(SuccessStatusCode.OPERATION_SUCCESS))
         (show_mfa_days, show_verify_code, show_login_lock,
@@ -560,7 +577,7 @@ class LoginV3View(BaseLoginView):
         if show_login_lock:
             logger.error(f"LoginV3View.post.1: {username}, {auth_type}, {login_ip}, {login_browser}, lock_msg: {lock_msg}")
             return JsonResponse(error(ErrorStatusCode.CUSTOM_ERROR2, custom_message=lock_msg, add_params=show_dict))
-        
+
         if auth_type == "1":  # 本地登录
             form = AuthenticationAndRegisterForm(request, data=data)
             if not form.is_valid():
@@ -650,7 +667,7 @@ class LoginV3View(BaseLoginView):
             return JsonResponse(error(ErrorStatusCode.CUSTOM_ERROR, custom_message="登录失败!", add_params=show_dict))
         print("login_error_times_clean: ", username, self.login_error_times(username, types="clean"))
         return self.login_success_response(request, user_or_form, redirect_to, app_id)
-    
+
     def get(self, request):
         return JsonResponse(success(SuccessStatusCode.MESSAGE_GET_SUCCESS))
 
@@ -679,7 +696,7 @@ class CheckPasswordView(View):
         form = AuthenticationAndRegisterForm(request, data=data)
         if not form.is_valid():
             msg = self.first_error_message(form)
-            return JsonResponse(error(ErrorStatusCode.CUSTOM_ERROR,custom_message=msg))
+            return JsonResponse(error(ErrorStatusCode.CUSTOM_ERROR, custom_message=msg))
         return JsonResponse(success(SuccessStatusCode.OPERATION_SUCCESS))
 
 
@@ -691,10 +708,10 @@ class UserLoginUnlockView(View):
         user = request.user
         if user and not isinstance(user, BkUser):
             return JsonResponse(error(ErrorStatusCode.PERMISSION_DENIED))
-        
+
         if user.role_code != 1:
             return JsonResponse(error(ErrorStatusCode.PERMISSION_DENIED))
-        
+
         if unlock_type == "disabled_all_user_lock":
             count, res_dict = UserAuthToken.objects.filter(app_code="login").delete()
             return JsonResponse(success(SuccessStatusCode.OPERATION_SUCCESS, count))
@@ -741,3 +758,95 @@ class UserExternalLoginView(BaseLoginView):
             msg = res.get("message") or "登录失败, 请联系管理员!"
             return render(request, "login/login.html", {"auth_type": auth_type, "error": msg})
 
+
+class APITokenView(CsrfExemptMixin, View):
+    def get(self, request):
+        data = request.GET.dict()
+        token_type = data.get("token_type", "api_token")
+        is_logout = data.get("is_logout")
+        id_list = data.get("id_list") or ""
+        user = request.user
+        username = user.username
+
+        search_dict = {"username": username}
+        if id_list:
+            if "," in id_list:
+                id_list = id_list.split(",")
+            else:
+                id_list = [id_list]
+            search_dict["id__in"] = id_list
+        if token_type != "all":
+            search_dict["token_type"] = token_type
+        if is_logout:
+            search_dict["is_logout"] = True if is_logout == "1" else False
+        queryset = BkToken.fetch_all(**search_dict)
+        res_dict = [query.to_dict() for query in queryset]
+        return JsonResponse(success(SuccessStatusCode.OPERATION_SUCCESS, res_dict))
+
+    def post(self, request):
+        user = request.user
+        kwargs = json.loads(request.body)
+        expire_time = kwargs.get("expire_time")
+        auth_platform = kwargs.get("auth_platform") or ["esb"]
+        content = kwargs.get("content") or []
+        username = user.username
+        if not auth_platform or not expire_time:
+            return JsonResponse(
+                error(ErrorStatusCode.CUSTOM_ERROR, custom_message="auth_platform或expire_time不能为空"))
+        status, id, token = self.get_api_token(username, expire_time, auth_platform, content)
+        if not status:
+            return JsonResponse(error(ErrorStatusCode.CUSTOM_ERROR, custom_message=token))
+        id_dict = {
+            "id": id,
+            "username": username,
+            "expire_time": expire_time,
+            "auth_platform": auth_platform,
+            "token": token,
+        }
+        return JsonResponse(success(SuccessStatusCode.OPERATION_SUCCESS, id_dict))
+
+    def delete(self, request):
+        kwargs = json.loads(request.body)
+        id = kwargs.get("id")
+        user = request.user
+        username = user.username
+        if not id:
+            return JsonResponse(error(ErrorStatusCode.OPERATION_ERROR))
+        BkToken.objects.filter(id=id, username=username).delete()
+        return JsonResponse(success(SuccessStatusCode.OPERATION_SUCCESS))
+
+    def get_api_token(self, username, expire_time, auth_platform, content):
+        """
+        生成用户的登录态
+        """
+        bk_token = ''
+        retry_count = 0
+        try:
+            expire_timestamp = int(datetime.strptime(expire_time, "%Y-%m-%d %H:%M:%S").timestamp())
+        except Exception as e:
+            return False, None, "expire_time格式错误： {}".format(expire_time)
+
+        if expire_timestamp < int(time.time()):
+            return False, None, "过期时间必须大于当前时间： {}".format(expire_time)
+        # 重试5次
+        query = None
+        while not bk_token and retry_count < 5:
+            plain_token = 'api_token|%s|%s|%s' % (expire_timestamp, username, salt(24))
+            bk_token = encrypt(plain_token)
+            try:
+                save_dict = {
+                    "token": bk_token,
+                    "token_type": "api_token",
+                    "username": username,
+                    "expire_time": expire_time,
+                    "auth_platform": auth_platform,
+                }
+                query = BkToken.objects.create(**save_dict)
+            except Exception as e:
+                logger.exception('Login ticket failed to be saved during ticket generation, error: {}'.format(e))
+                # 循环结束前将bk_token置空后重新生成
+                bk_token = '' if retry_count < 4 else bk_token
+            retry_count += 1
+        if not query:
+            return False, None, "APIToken创建失败！"
+        return True, query.id, bk_token

@@ -16,6 +16,7 @@ import uuid
 import json
 
 from django.conf import settings
+from django.db.models import F
 from django.utils.translation import gettext as _
 # Avoid shadowing the login() and logout() views below.
 from django.contrib.auth import (login as auth_login, logout as auth_logout)
@@ -113,10 +114,10 @@ class Account(AccountSingleton):
         while not bk_token and retry_count < 5:
             now_time = int(time.time())
             expire_time = now_time + self.BK_COOKIE_AGE
-            plain_token = '%s|%s|%s' % (expire_time, username, salt())
+            plain_token = 'login|%s|%s|%s' % (expire_time, username, salt())
             bk_token = encrypt(plain_token)
             try:
-                BkToken.objects.create(token=bk_token)
+                BkToken.objects.create(token=bk_token, username=username, token_type="login")
             except Exception as error:
                 logger.exception('Login ticket failed to be saved during ticket generation, error: {}'.format(error))
                 # 循环结束前将bk_token置空后重新生成
@@ -148,9 +149,14 @@ class Account(AccountSingleton):
 
         return True, None, token_info
 
-    def _is_bk_token_valid(self, bk_token):
+    def _is_bk_token_valid(self, bk_token, request_api_from="", url_app_code="", url_path=None, url_method=None):
         """
         验证用户登录态
+        bk_token：bk_token或api_token
+        request_api_from：接口来源(当是esb调用saas时，来源为esb, 当页面调用saas api时为web)
+        url_app_code：API接口平台
+        url_path：API接口路径
+        url_method：API接口请求方式
         """
         if not bk_token:
             error_msg = _("缺少参数bk_token")
@@ -163,37 +169,60 @@ class Account(AccountSingleton):
         ok, error_msg, token_info = self._decrypt_token(bk_token)
         if not ok:
             return False, None, error_msg
-
-        if not token_info or len(token_info) < 3:
+        if not token_info:
             return False, None, error_msg
-
-        try:
-            is_logout = BkToken.objects.get(token=bk_token).is_logout
-        except BkToken.DoesNotExist:
-            error_msg = _("不存在该bk_token的记录")
-            return False, None, error_msg
-
-        expire_time = int(token_info[0])
+        lens = len(token_info)
+        if lens not in [3, 4]:
+            return False, None, "Token解析失败，请登录后重试！!"
+        query = BkToken.objects.filter(token=bk_token).first()
+        if query:
+            query.update(call_count=F('call_count') + 1)
+        if not query:
+            return False, None, _("不存在该bk_token的记录")
+        if query.is_logout:
+            return False, None, _("登录态已注销")
         now_time = int(time.time())
-        # token已注销
-        if is_logout:
-            error_msg = _("登录态已注销")
-            return False, None, error_msg
+
+        if lens == 3:
+            token_info.insert(0, "login")
+        login_type = token_info[0]
+        expire_time = int(token_info[1])
+        username = token_info[2]
+
         # token有效期已过
         if now_time > expire_time + self.BK_TOKEN_OFFSET_ERROR_TIME:
             error_msg = _("登录态已过期")
             return False, None, error_msg
-        # token有效期大于当前时间的有效期
-        if expire_time - now_time > self.BK_COOKIE_AGE + self.BK_TOKEN_OFFSET_ERROR_TIME:
-            error_msg = _("登录态有效期不合法")
-            return False, None, error_msg
+        if login_type == "login":  # login 根据本地过期时间处理
+            # token有效期大于当前时间的有效期
+            if expire_time - now_time > self.BK_COOKIE_AGE + self.BK_TOKEN_OFFSET_ERROR_TIME:
+                error_msg = _("登录态有效期不合法")
+                return False, None, error_msg
+        elif login_type == "api_token":
+            auth_platform = query.auth_platform or []
+            auth_platform.extend(["login", "paas"])
+            if not request_api_from:
+                return False, None, "此APIToken验证需要授权平台参数：request_api_from"
 
-        username = token_info[1]
+            if request_api_from not in ["esb", "login", "paas", "web", "saas"]:
+                return False, None, "此APIToken授权平台来源不明确：{}".format(request_api_from)
+            if request_api_from in ["esb", "login", "paas"] and request_api_from not in auth_platform:
+                msg = "此APIToken未授权该平台：{}".format(request_api_from)
+                if url_app_code and request_api_from != url_app_code:
+                    msg += f"({url_app_code})"
+                return False, None, msg
+            elif request_api_from in ["web", "saas"] and url_app_code not in auth_platform:
+                if not url_app_code:
+                    return False, None, "此APIToken验证需要授权平台参数：url_app_code"
+                return False, None, "此APIToken未授权该平台：{}({})".format(request_api_from, url_app_code or "-")
+        else:
+            return False, None, "Token解析失败，请登录后重试！"
         return True, username, ""
 
     def is_bk_token_valid(self, request):
+        """处理本平台部分接口的认证操作"""
         bk_token = request.COOKIES.get(self.BK_COOKIE_NAME)
-        return self._is_bk_token_valid(bk_token)
+        return self._is_bk_token_valid(bk_token, "login", url_path=None, url_method=None)
 
     def set_bk_token_invalid(self, request, response=None):
         """

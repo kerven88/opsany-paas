@@ -1,0 +1,16 @@
+apiVersion: v2.3.2
+apiService:
+  url: https://DOMAIN_NAME
+  bk_app_code: cmdb
+  bk_app_secret: CMDB_SECRET_KEY
+  super_username: admin  # 管理员用户名 用作部分API接口内部调用
+  api_version: 4.0.2  # esb api服务版本
+server:
+  host: 0.0.0.0
+  port: 8020
+  auth_token: "MCP_AUTH_TOKEN"  # MCP Server的认证Token，安装时自动生成，调用时需要添加在Header中。
+config:
+  resourceIdDefaultField: "code,VISIBLE_NAME,name"
+  resourceIdFieldSearch: false
+  resourceDefaultLimit: 20
+  apiResourcesDefaultLimit: 100

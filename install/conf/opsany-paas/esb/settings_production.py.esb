@@ -16,8 +16,9 @@ DATABASES = {
 }
 
 # esb components
-PAAS_DOMAIN = 'PAAS_PAAS_IP'
+PAAS_DOMAIN = 'LOCAL_IP'
 BK_ENV = "o"
+HOST_CC = ''
 
 # Log settings
 LOG_LEVEL = 'ERROR'

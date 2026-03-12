@@ -26,8 +26,12 @@ def validate_bk_token(data):
     """
     account = Account()
     bk_token = data.get(account.BK_COOKIE_NAME)
+    request_api_from = data.get("request_api_from") or ""
+    url_app_code = data.get("url_app_code") or ""
+    url_method = data.get("url_method")
+    url_path = data.get("url_path")
     # 验证Token参数
-    is_valid, username, message = account._is_bk_token_valid(bk_token)
+    is_valid, username, message = account._is_bk_token_valid(bk_token, request_api_from, url_app_code=url_app_code, url_path=url_path, url_method=url_method)
     if not is_valid:
         return False, None, message
     try:

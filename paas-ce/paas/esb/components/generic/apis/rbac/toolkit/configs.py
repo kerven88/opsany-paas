@@ -12,4 +12,4 @@ host = SmartHost(
 )
 # -*- coding: utf-8 -*-
 
-base_api_url = "/{}/rbac/api/rbac/v0_1/".format(getattr(settings, "BK_ENV", "o"))
+base_api_url = "/{}/rbac/api/rbac/esb/v0_1/".format(getattr(settings, "BK_ENV", "o"))

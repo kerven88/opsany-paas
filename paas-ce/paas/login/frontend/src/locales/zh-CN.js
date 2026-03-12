@@ -1,5 +1,6 @@
 export default {
 	document_title: "登录 {'|'} 数字化运维平台",
+	demo_tip:'【演示用户：demo，密码：123456.coM】演示用户由于权限限制，仅可查看部分功能，完整功能请私有化部署社区版使用。',
 	header_help: '帮助中心',
 	login_welcome: '欢迎登录数字化运维平台',
 	login_btn: '立即登录',

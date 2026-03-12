@@ -58,7 +58,7 @@ def get_user_info(bk_token):
 def verify_bk_login(bk_token):
     """请求平台接口验证登录是否失效
     """
-    param = {'bk_token': bk_token}
+    param = {'bk_token': bk_token, "request_api_from": "login"}
     ok, message, data = _call_login_api(http_get, 'is_login', param)
     if not ok:
         return False, {}

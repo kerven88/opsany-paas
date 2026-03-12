@@ -16,10 +16,10 @@ default_include: master.d/*.conf
 
 # Whether the master should listen for IPv6 connections. If this is set to True,
 # the interface option must be adjusted, too. (For example: "interface: '::'")
-#ipv6: False
+ipv6: False
 
 # The tcp port used by the publisher:
-#publish_port: 4505
+publish_port: 4505
 
 # The user under which the salt master will run. Salt will update all
 # permissions to allow the specified user to run the master. The exception is
@@ -29,7 +29,7 @@ default_include: master.d/*.conf
 
 # The port used by the communication interface. The ret (return) port is the
 # interface used for the file server, authentication, job returns, etc.
-#ret_port: 4506
+ret_port: 4506
 
 # Specify the location of the daemon process ID file:
 #pidfile: /var/run/salt-master.pid
@@ -80,7 +80,7 @@ default_include: master.d/*.conf
 
 # Set the default timeout for the salt command and api. The default is 5
 # seconds.
-#timeout: 5
+timeout: 5
 
 # The loop_interval option controls the seconds for the master's maintenance
 # process check cycle. This process updates file server backends, cleans the
@@ -264,7 +264,7 @@ default_include: master.d/*.conf
 # return calls made from minions to the master. If the master seems to be
 # running slowly, increase the number of threads. This setting can not be
 # set lower than 3.
-worker_threads: 3
+worker_threads: 10
 
 # Set the ZeroMQ high water marks
 # http://api.zeromq.org/3-2:zmq-setsockopt
@@ -1281,7 +1281,7 @@ pillar_roots:
 
 # Overall state of TCP Keepalives, enable (1 or True), disable (0 or False)
 # or leave to the OS defaults (-1), on Linux, typically disabled. Default True, enabled.
-#tcp_keepalive: True
+tcp_keepalive: True
 
 # How long before the first keepalive should be sent in seconds. Default 300
 # to send the first keepalive after 5 minutes, OS default (-1) is typically 7200 seconds
@@ -1302,10 +1302,3 @@ pillar_roots:
 ############################################
 # Allow the raw_shell parameter to be used when calling Salt SSH client via API
 #netapi_allow_raw_shell: True
-netapi_enable_clients:
-  - local
-  - runner
-  - wheel
-  - local_async
-  - runner_async
-  - wheel_async

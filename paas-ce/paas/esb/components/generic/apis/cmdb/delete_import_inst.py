@@ -50,7 +50,7 @@ class DeleteImportInst(Component):
         "message": "成功删除云主机实例"
     }
     ```
-    """#
+    """
 
     # 组件所属系统的系统名
     sys_name = configs.SYSTEM_NAME

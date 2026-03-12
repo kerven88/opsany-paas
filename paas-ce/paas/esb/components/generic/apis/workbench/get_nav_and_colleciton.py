@@ -32,7 +32,7 @@ class GetNavAndCollection(Component):
         "message": "获取相关信息成功"
     }
     ```
-    """#
+    """
 
     # 组件所属系统的系统名
     sys_name = configs.SYSTEM_NAME

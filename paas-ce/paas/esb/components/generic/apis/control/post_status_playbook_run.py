@@ -6,7 +6,7 @@ from django import forms
 from common.forms import BaseComponentForm
 from components.component import Component
 from .toolkit import configs
-from .toolkit.tools import base_api_url
+from .toolkit.tools import base_execution_api_url
 
 
 class PostStatusPlaybookRun(Component):
@@ -55,7 +55,7 @@ class PostStatusPlaybookRun(Component):
         "data": "xxxxxxx"
     }
     ```
-    """#
+    """
 
     # 组件所属系统的系统名
     sys_name = configs.SYSTEM_NAME
@@ -81,7 +81,7 @@ class PostStatusPlaybookRun(Component):
         # 请求系统接口
         response = self.outgoing.http_client.post(
             host=configs.host,
-            path='{}status-playbook-run/'.format(base_api_url.replace("api/control/v0_1/", "api/execution/v0_1/")),
+            path='{}status-playbook-run/'.format(base_execution_api_url),
             data=json.dumps(params),
             cookies=self.request.wsgi_request.COOKIES,
         )

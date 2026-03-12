@@ -22,6 +22,13 @@
 				</a-dropdown>
 			</div>
 		</header>
+		<div v-if="showDemoTip" class="absolute left-0 top-[50px] w-full">
+			<a-alert style="text-align: center;" type="info" >
+				<template #message>
+					<InfoCircleFilled style="color:#1677ff" /> {{ $t('demo_tip') }}
+				</template>
+			</a-alert>
+		</div>
 		<div>
 			<div class="ml-[20%]">
 				<img class="w-[540px] mt-[11%]" :src="config.baseUrlOfImg + 'uploads/login/img/home_top_word.png'" alt="" />
@@ -65,6 +72,8 @@ import IDaaS from "./components/IDaaS.vue";
 import OAuth from "./components/OAuth.vue";
 import AD from "./components/AD.vue";
 import IAM from "./components/IAM.vue";
+import DingTalk from "./components/DingTalk.vue";
+import Feishu from "./components/Feishu.vue";
 import BindMfa from "./components/BindMfa.vue";
 import ValiMfa from "./components/ValiMfa.vue";
 import { useUrlSearchParams } from "@vueuse/core";
@@ -91,9 +100,12 @@ const loginTypeList = shallowRef([
 	{ title: "SSO", key: "8", componentKey: SSO },
 	{ title: "IDaaS", key: "9", componentKey: IDaaS },
 	{ title: "IAM", key: "10", componentKey: IAM },
+	{ title: "钉钉", key: "11", componentKey: DingTalk },
+	{ title: "飞书", key: "12", componentKey: Feishu },
 ]);
 const authList = shallowRef([]);
 const activeLoginKey = ref("1");
+const showDemoTip = ref(window.location.hostname === "demo.opsany.com");
 
 const getAuthList = async () => {
 	try {
@@ -131,7 +143,7 @@ const setDefaultLocale = () => {
 	const cookies = useCookies(["opsany_language"]);
 	const currentCookie = cookies.get("opsany_language");
 	if (!currentCookie) {
-		setLocale("zh-CN");
+		locale.value = "zh-CN";
 	}
 };
 

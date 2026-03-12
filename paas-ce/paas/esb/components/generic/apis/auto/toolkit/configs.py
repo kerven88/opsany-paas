@@ -11,4 +11,4 @@ host = SmartHost(
     host_prod=settings.PAAS_DOMAIN,
 )
 
-base_api_url = "/{}/auto/api/auto/v0_1/".format(getattr(settings, "BK_ENV", "o"))
+base_api_url = "/{}/auto/api/auto/esb/v0_1/".format(getattr(settings, "BK_ENV", "o"))

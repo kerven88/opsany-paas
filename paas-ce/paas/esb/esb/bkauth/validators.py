@@ -34,7 +34,8 @@ class UserAuthValidator(BaseValidator):
             from components.bk.apis.bk_login.is_login import IsLogin
             check_result = IsLogin().invoke(kwargs={'bk_token': bk_token}, request_id=request.request_id)
             if not check_result['result']:
-                raise ValidationError('User authentication failed, please check if the bk_token is valid')
+                msg = check_result.get("message")
+                raise ValidationError(f'User authentication failed, please check if the bk_token is valid({msg})')
             self.sync_current_username(request, check_result.get('data', {}).get('username', ''))
             return
 

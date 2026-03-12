@@ -26,6 +26,10 @@ class GetControlAgentInfo(Component):
     | ----- | ------ | ---- | -------- |
     | token_data | str | 是  | token |
     | system_type | str | 是  | 系统类型 |
+    | host_type | str | 是  | 主机类型 |
+    | name | str | 是  | 主机名模糊搜索 |
+    | ip | str | 是  | 主机IP模糊搜索 |
+    | show_name | str | 是  | 主机显示模糊搜索 |
     | group_type | string | 是  | 分组ID |
     | search_type | string | 是  | 搜索字段 |
     | search_data | string | 是  | 搜索内容 |
@@ -52,19 +56,24 @@ class GetControlAgentInfo(Component):
     class Form(BaseComponentForm):
         token_data = forms.Field(required=True)
         system_type = forms.Field(required=False)
+        host_type = forms.Field(required=False)
         group_type = forms.Field(required=False)
+        name = forms.Field(required=False)
+        show_name = forms.Field(required=False)
+        ip = forms.Field(required=False)
         search_type = forms.Field(required=False)
         search_data = forms.Field(required=False)
         group_level = forms.Field(required=False)
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=["token_data", "system_type", "group_type", "search_type", "search_data", "group_level"])
+            return self.get_cleaned_data_when_exist(keys=["token_data", "system_type", "system_type", "host_type",
+                                                          "name", "show_name", "ip", "group_type", "search_type",
+                                                          "search_data", "group_level"])
 
     # 组件处理入口
     def handle(self):
         # 获取Form clean处理后的数据
         params = self.form_data
-
         # bk_token 设置当前操作者
         params['operator'] = self.current_user.username
 

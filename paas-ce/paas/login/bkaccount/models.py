@@ -19,6 +19,48 @@ from bkaccount.manager import (BkUserManager, LoginLogManager)
 from bkaccount.constants import (ROLECODE_CHOICES, RoleCodeEnum, LANGUAGE_CHOICES, TIME_ZONE_CHOICES)
 
 
+class BaseModel(models.Model):
+    create_time = models.DateTimeField(auto_now_add=True)
+    update_time = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+        ordering = ["-create_time", "-update_time"]
+
+    def __str__(self):
+        return '<{} {}>'.format(self.__class__.__name__, self.pk)
+
+    def __repr__(self):
+        return '<{} {}>'.format(self.__class__.__name__, self.pk)
+
+    def update(self, **kwargs):
+        # kwargs['update_time'] = datetime.now()
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+        self.save()
+        return self
+
+    @classmethod
+    def fetch_one(cls, **kwargs):
+        return cls.objects.filter(**kwargs).first()
+
+    @classmethod
+    def fetch_all(cls, **kwargs):
+        return cls.objects.filter(**kwargs)
+
+    @classmethod
+    def create(cls, **kwargs):
+        obj = cls(**kwargs)
+        obj.save()
+        return obj
+
+    def str_time(self, time_obj):
+        try:
+            return f"{time_obj:%Y-%m-%d %H:%M:%S}"
+        except Exception:
+            return str(time_obj).split(".")[0] if time_obj else ""
+
+
 class BkRole(models.Model):
     """
     角色表
@@ -137,8 +179,7 @@ class Loignlog(models.Model):
     """
     User login log
     """
-
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="用户")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="用户")  # type: BkUser
     login_time = models.DateTimeField("登录时间")
     login_browser = models.CharField("登录浏览器", max_length=200, blank=True, null=True)
     login_ip = models.CharField("用户登录ip", max_length=50, blank=True, null=True)
@@ -148,7 +189,7 @@ class Loignlog(models.Model):
     objects = LoginLogManager()
 
     def __unicode__(self):
-        return "%s(%s)" % (self.user.chname, self.user.username)
+        return "%s(%s)" % (self.user.chname if self.user else "--", self.user.username if self.user else "--")
 
     class Meta:
         db_table = "login_bklog"
@@ -156,11 +197,16 @@ class Loignlog(models.Model):
         verbose_name_plural = "用户登录日志"
 
 
-class BkToken(models.Model):
+class BkToken(BaseModel):
     """
     登录票据
     """
     token = models.CharField("登录票据", max_length=255, unique=True, db_index=True)
+    token_type = models.CharField("Token类型", max_length=128, default="login")
+    username = models.CharField("用户信息", max_length=255, default="")
+    expire_time = models.DateTimeField("过期时间", blank=True, null=True)
+    auth_platform = models.JSONField("相关内容", null=True, default=list)
+    call_count = models.IntegerField("调用次数", default=0)
     # 是否已经退出登录
     is_logout = models.BooleanField("票据是否已经执行过退出登录操作", default=False)
     # 无操作过期时间戳
@@ -173,6 +219,51 @@ class BkToken(models.Model):
         db_table = "login_bktoken"
         verbose_name = "登录票据"
         verbose_name_plural = "登录票据"
+
+        # 为单个字段添加普通索引
+        indexes = [
+            models.Index(fields=['username'], name='bktoken_username_idx'),
+            models.Index(fields=['token_type'], name='bktoken_token_type_idx'),
+            models.Index(fields=['expire_time'], name='bktoken_expire_time_idx'),
+        ]
+
+    def to_dict(self):
+        dt = {
+            "id": self.id,
+            "expire_time": self.str_time(self.expire_time),
+            "token_type": self.token_type,
+            "is_logout": self.is_logout,
+            "call_count": self.call_count,
+            "create_time": self.str_time(self.create_time),
+            "update_time": self.str_time(self.update_time),
+        }
+        return dt
+
+
+class BkTokenApiAuthModel(BaseModel):
+    """登录票据相关API认证"""
+    bk_token = models.ForeignKey(BkToken, on_delete=models.CASCADE)
+    username = models.CharField("用户信息", max_length=255, default="")
+    token_type = models.CharField("Token类型", max_length=128, default="login")
+    auth_type = models.CharField("平台认证方式", max_length=128, default="1", db_index=True)  # 1 全部 2 部分
+    auth_platform = models.CharField("授权平台", max_length=255, null=True, default="", db_index=True)
+    apis = models.JSONField("相关内容", null=True, default=list)
+
+    def __uincode__(self):
+        return self.auth_platform
+
+    class Meta:
+        db_table = "login_bktoken_api_auth"
+        verbose_name = "登录票据API认证数据"
+        verbose_name_plural = "登录票据API认证数据"
+
+        # 为单个字段添加普通索引
+        indexes = [
+            models.Index(fields=['username'], name='bktokenapi_username_idx'),
+            models.Index(fields=['token_type'], name='bktokenapi_token_type_idx'),
+            models.Index(fields=['auth_type'], name='bktokenapi_auth_type_idx'),
+            models.Index(fields=['auth_platform'], name='bktokenapi_auth_platform_idx'),
+        ]
 
 
 class UserInfo(models.Model):
@@ -233,5 +324,3 @@ class UserAuthToken(models.Model):
             "last_accessed_time": self.time_to_str(self.last_accessed_time)
         }
         return dt
-        
-        

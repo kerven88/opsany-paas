@@ -10,7 +10,7 @@
 CDIR=$(pwd)
 SHELL_NAME="saas-ce-install.sh"
 SHELL_LOG="${SHELL_NAME}.log"
-SAAS_VERSION=2.3.1
+SAAS_VERSION=2.3.2
 
 # Shell Log Record
 shell_log(){
@@ -53,7 +53,7 @@ fi
 # Install initialization
 install_init(){
     #SaaS Log Directory
-    mkdir -p ${INSTALL_PATH}/logs/{rbac,workbench,cmdb,control,job,monitor,cmp,bastion,devops,pipeline,repo,code,deploy,proxy,llmops}
+    mkdir -p ${INSTALL_PATH}/logs/{rbac,workbench,cmdb,control,job,monitor,cmp,bastion,devops,pipeline,repo,code,deploy,proxy,llmops,opsany-mcp-server}
 }
 
 # Start Proxy
@@ -156,6 +156,8 @@ saas_rbac_deploy(){
     # Modify configuration
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
     sed -i "s/RBAC_SECRET_KEY/${RBAC_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-prod.py
@@ -206,6 +208,8 @@ saas_workbench_deploy(){
     WORKBENCH_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.workbench_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
     sed -i "s/WORKBENCH_SECRET_KEY/${WORKBENCH_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-prod.py
@@ -258,6 +262,8 @@ saas_cmdb_deploy(){
     CMDB_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.cmdb_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
     sed -i "s/CMDB_SECRET_KEY/${CMDB_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-prod.py
@@ -311,6 +317,8 @@ saas_control_deploy(){
     CONTROL_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.control_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
     sed -i "s/CONTROL_SECRET_KEY/${CONTROL_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-prod.py
@@ -361,6 +369,8 @@ saas_job_deploy(){
     JOB_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.job_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
     sed -i "s/JOB_SECRET_KEY/${JOB_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-prod.py
@@ -428,6 +438,8 @@ saas_monitor_deploy(){
     MONITOR_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.monitor_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
     sed -i "s/MONITOR_SECRET_KEY/${MONITOR_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-prod.py
@@ -465,12 +477,12 @@ saas_monitor_deploy(){
     # Install Grafana Zabbix Plugin
     ZABBIX_GRAFANE_PLUGIN_NAME="alexanderzobnin-zabbix-app-4.3.1.zip"
     if [ -f "/tmp/${ZABBIX_GRAFANE_PLUGIN_NAME}" ]; then
-        cd /tmp && unzip -q ${ZABBIX_GRAFANE_PLUGIN_NAME}
+        cd /tmp && unzip -oq ${ZABBIX_GRAFANE_PLUGIN_NAME}
         docker cp /tmp/alexanderzobnin-zabbix-app opsany-base-grafana:/var/lib/grafana/plugins/
         docker restart opsany-base-grafana
     else
         cd /tmp && wget https://opsany.oss-cn-beijing.aliyuncs.com/${ZABBIX_GRAFANE_PLUGIN_NAME}
-        unzip -q ${ZABBIX_GRAFANE_PLUGIN_NAME}
+        unzip -oq ${ZABBIX_GRAFANE_PLUGIN_NAME}
         docker cp /tmp/alexanderzobnin-zabbix-app opsany-base-grafana:/var/lib/grafana/plugins/
         docker restart opsany-base-grafana
     fi
@@ -498,6 +510,8 @@ saas_cmp_deploy(){
     CMP_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.cmp_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
     sed -i "s/CMP_SECRET_KEY/${CMP_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-prod.py
@@ -550,6 +564,8 @@ saas_bastion_deploy(){
     # Bastion Configure
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
     sed -i "s/BASTION_SECRET_KEY/${BASTION_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-prod.py
@@ -606,6 +622,8 @@ saas_devops_deploy(){
     /bin/cp conf/opsany-saas/devops/* ${INSTALL_PATH}/conf/opsany-saas/devops/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
     sed -i "s/DEVOPS_SECRET_KEY/${DEVOPS_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-prod.py
@@ -672,6 +690,8 @@ saas_repo_deploy(){
     fi
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
     sed -i "s/REPO_SECRET_KEY/${REPO_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-prod.py
@@ -737,6 +757,8 @@ saas_pipeline_deploy(){
     PIPELINE_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.pipeline_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
     sed -i "s/PIPELINE_SECRET_KEY/${PIPELINE_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-prod.py
@@ -799,6 +821,8 @@ saas_deploy_deploy(){
     DEPLOY_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.deploy_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
     sed -i "s/DEPLOY_SECRET_KEY/${DEPLOY_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-prod.py
@@ -856,6 +880,8 @@ saas_code_deploy(){
     CODE_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.code_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
     sed -i "s/CODE_SECRET_KEY/${CODE_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-prod.py
@@ -881,67 +907,30 @@ saas_code_deploy(){
     
 }
 
-saas_llmops_deploy(){
-    shell_log "======llmops: Start llmops======"
+saas_mcp_deploy(){
+    shell_log "======Code: Start OpsAny MCP Server======"
     cd ${CDIR}
-    #llmops
-    export MYSQL_PWD=${MYSQL_ROOT_PASSWORD}
-    mysql -h "${MYSQL_SERVER_IP}" -P ${MYSQL_SERVER_PORT} -u root -e "create database llmops DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;"
-    mysql -h "${MYSQL_SERVER_IP}" -P ${MYSQL_SERVER_PORT} -u root -e "CREATE USER 'llmops'@'%' identified by "\"${MYSQL_OPSANY_LLMOPS_PASSWORD}\"";"
-    mysql -h "${MYSQL_SERVER_IP}" -P ${MYSQL_SERVER_PORT} -u root -e "grant all on llmops.* to llmops@'%';" 
-
-    if [ -d ${INSTALL_PATH}/conf/opsany-saas/llmops ];then
-        /bin/cp -r ./conf/opsany-saas/llmops/* ${INSTALL_PATH}/conf/opsany-saas/llmops/
+    # MCP Configure
+    CMDB_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.cmdb_secret_key)
+    if [ -f ${INSTALL_PATH}/conf/.mcp_auth_token ];then
+        MCP_AUTH_TOKEN=$(cat ${INSTALL_PATH}/conf/.mcp_auth_token)
     else
-        /bin/cp -r ./conf/opsany-saas/llmops ${INSTALL_PATH}/conf/opsany-saas/
-         mkdir -p ${INSTALL_PATH}/logs/llmops
+        MCP_AUTH_TOKEN=$(uuid -v4)
+        echo $MCP_AUTH_TOKEN > ${INSTALL_PATH}/conf/.mcp_auth_token
     fi
-
-    # Register llmops
-    if [ -f ${INSTALL_PATH}/conf/.passwd_env ];then
-        source ${INSTALL_PATH}/conf/.passwd_env
-    fi
-
-    if [ -f ${INSTALL_PATH}/conf/.llmops_secret_key ];then
-        LLMOPS_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.llmops_secret_key)
-    else
-        LLMOPS_SECRET_KEY=$(uuid -v4)
-        echo $LLMOPS_SECRET_KEY > ${INSTALL_PATH}/conf/.llmops_secret_key
-    fi
-
-    docker exec opsany-paas-websocket /bin/sh -c "python3 /opt/opsany/saas/register_online_saas.py --paas_domain https://${DOMAIN_NAME} --username admin --password ${ADMIN_PASSWORD} --saas_app_code llmops --saas_app_name 大模型开发平台 --saas_app_version ${SAAS_VERSION} --saas_app_secret_key ${LLMOPS_SECRET_KEY}"
-
-    # llmops Configure
-    LLMOPS_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.llmops_secret_key)
-    sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-init.py
-    sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-init.py
-    sed -i "s/LLMOPS_SECRET_KEY/${LLMOPS_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-init.py
-    sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MYSQL_OPSANY_LLMOPS_PASSWORD/${MYSQL_OPSANY_LLMOPS_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MONGO_SERVER_IP/${MONGO_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MONGO_SERVER_PORT/${MONGO_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MONGO_LLMOPS_PASSWORD/${MONGO_LLMOPS_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-
-    docker pull ${PAAS_DOCKER_REG}/opsany-saas-ce-llmops:${SAAS_VERSION}
+    sed -i "s/MCP_AUTH_TOKEN/${MCP_AUTH_TOKEN}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    sed -i "s/CMDB_SECRET_KEY/${CMDB_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    
     # Starter container
-    docker run -d --restart=always --name opsany-saas-ce-llmops \
-       -p 7000:80 \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-supervisor.ini:/etc/supervisord.d/llmops.ini \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-uwsgi.ini:/opt/opsany/uwsgi/llmops.ini \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-init.py:/opt/opsany/llmops/config/__init__.py \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py:/opt/opsany/llmops/config/prod.py \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-nginx.conf:/etc/nginx/http.d/default.conf \
+    docker run -d --restart=always --name opsany-paas-mcp-server \
+       -p 8020:8020 \
+       -v ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml:/opt/opsany/opsany-mcp-server/config/config.yaml \
+       -v ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp-supervisor.ini:/etc/supervisord.d/mcp.ini \
        -v ${INSTALL_PATH}/logs:/opt/opsany/logs \
        -v ${INSTALL_PATH}/uploads:/opt/opsany/uploads \
        -v /etc/localtime:/etc/localtime:ro \
-       ${PAAS_DOCKER_REG}/opsany-saas-ce-llmops:${SAAS_VERSION}
-
-    # Django migrate
-    docker exec -e BK_ENV="production" opsany-saas-ce-llmops /bin/sh -c \
-    "python /opt/opsany/llmops/manage.py migrate --noinput && python /opt/opsany/llmops/manage.py createcachetable django_cache > /dev/null" >> ${SHELL_LOG}
-    # Add Nav
-    docker exec opsany-paas-websocket /bin/sh -c "python3 /opt/opsany/saas/init-llmops-ollama-script.py --domain https://${DOMAIN_NAME} --paas_username admin --paas_password ${ADMIN_PASSWORD} --add_type nav"
+       ${PAAS_DOCKER_REG}/opsany-paas-mcp-server:${SAAS_VERSION}
 }
 
 zabbix_install(){
@@ -1040,6 +1029,16 @@ admin_password_init(){
     shell_error_log "Web: https://$DOMAIN_NAME Username: admin Password: $ADMIN_NEW_PASSWORD"
 }
 
+mcp_json(){
+    cd ${CDIR}
+    MCP_AUTH_TOKEN=$(cat ${INSTALL_PATH}/conf/.mcp_auth_token)
+    /bin/cp conf/opsany-paas/mcp-server/mcp.json ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.json
+    sed -i "s/MCP_AUTH_TOKEN/${MCP_AUTH_TOKEN}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.json
+    sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.json
+    shell_warning_log "======OpsAny: MCP Server Config JSON======"
+    cat ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.json
+}
+
 # Main
 main(){
     case "$1" in
@@ -1056,8 +1055,9 @@ main(){
         saas_cmp_deploy
         saas_bastion_deploy
         saas_monitor_deploy
+        saas_mcp_deploy
         saas_base_init
-        #saas_llmops_deploy
+        mcp_json
         admin_password_init
         ;;
       ops)
@@ -1073,9 +1073,10 @@ main(){
 	    saas_cmp_deploy
         saas_monitor_deploy
 	    saas_bastion_deploy
-        #saas_llmops_deploy
+        saas_mcp_deploy
         saas_base_init
         zabbix_auto
+        mcp_json
         admin_password_init
         ;;
       zabbix_install)
@@ -1131,6 +1132,7 @@ main(){
         saas_monitor_deploy
         saas_cmp_deploy
         saas_bastion_deploy
+        saas_mcp_deploy
         saas_base_init
         zabbix_auto
         #saas_code_deploy
@@ -1138,11 +1140,14 @@ main(){
         saas_pipeline_deploy
         saas_deploy_deploy
         saas_repo_deploy
-        #saas_llmops_deploy
+        mcp_json
         admin_password_init
         ;;
+      mcp)
+        mcp_json
+        ;;
       help|*)
-	    echo $"Usage: $0 {base|ops|dev|all|help|zabbix_install|zabbix_add|llmops}"
+	    echo $"Usage: $0 {base|ops|dev|all|help|zabbix_install|zabbix_add|mcp}"
 	    ;;
     esac
 }

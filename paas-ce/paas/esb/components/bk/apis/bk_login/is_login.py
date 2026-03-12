@@ -63,6 +63,8 @@ class IsLogin(Component):
         bk_token = forms.CharField(label='login token', required=True)
 
     def handle(self):
+        if isinstance(self.form_data, dict):
+            self.form_data["request_api_from"] = "esb"
         self.response.payload = self.outgoing.http_client.get(
             configs.host,
             '/login/accounts/is_login/',

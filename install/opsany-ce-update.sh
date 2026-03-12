@@ -48,6 +48,8 @@ else
         source ${INSTALL_PATH}/conf/.passwd_env
     fi
     mkdir -p ${INSTALL_PATH}/conf/opsany-paas/{paas,esb,login,appengine,websocket}
+    mkdir -p ${INSTALL_PATH}/logs/{rbac,workbench,cmdb,control,job,monitor,cmp,bastion,devops,pipeline,repo,code,deploy,proxy,llmops,opsany-mcp-server}
+    chmod -R 777 ${INSTALL_PATH}/uploads/guacamole
     # copy init script to websocket
     docker cp ../saas/ opsany-paas-websocket:/opt/opsany/
     docker cp ./init/ opsany-paas-websocket:/opt/opsany/
@@ -81,6 +83,58 @@ paas_update(){
     ${PAAS_DOCKER_REG}/opsany-paas-paas:${UPDATE_VERSION}
 }
 
+
+guacd_update(){
+    # Guacd
+    shell_log "======Start Guacd======"
+    docker pull ${PAAS_DOCKER_REG}/guacd:${UPDATE_VERSION}
+    docker stop opsany-base-guacd && docker rm opsany-base-guacd
+    docker run -d --restart=always --name opsany-base-guacd \
+    -p 4822:4822 \
+    -v ${INSTALL_PATH}/uploads/guacamole:/srv/guacamole \
+    -v /etc/localtime:/etc/localtime:ro \
+    ${PAAS_DOCKER_REG}/guacd:${UPDATE_VERSION}
+}
+
+mcp_update(){
+    shell_log "======Start OpsAny MCP Server======"
+    docker pull ${PAAS_DOCKER_REG}/opsany-paas-mcp-server:${UPDATE_VERSION}
+    docker stop opsany-paas-mcp-server && docker rm opsany-paas-mcp-server
+    # MCP Configure
+    mkdir -p ${INSTALL_PATH}/conf/opsany-paas/mcp-server
+    if [ -f ${INSTALL_PATH}/conf/.mcp_auth_token ];then
+        MCP_AUTH_TOKEN=$(cat ${INSTALL_PATH}/conf/.mcp_auth_token)
+    else
+        MCP_AUTH_TOKEN=$(uuid -v4)
+        echo $MCP_AUTH_TOKEN > ${INSTALL_PATH}/conf/.mcp_auth_token
+    fi
+    
+    /bin/cp conf/opsany-paas/mcp-server/config.yaml ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    /bin/cp conf/opsany-paas/mcp-server/mcp-supervisor.ini ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp-supervisor.ini
+    CMDB_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.cmdb_secret_key)
+    sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    sed -i "s/CMDB_SECRET_KEY/${CMDB_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    sed -i "s/MCP_AUTH_TOKEN/${MCP_AUTH_TOKEN}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+
+    # Starter container
+    docker run -d --restart=always --name opsany-paas-mcp-server \
+       -p 8020:8020 \
+       -v ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml:/opt/opsany/opsany-mcp-server/config/config.yaml \
+       -v ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp-supervisor.ini:/etc/supervisord.d/mcp.ini \
+       -v ${INSTALL_PATH}/logs:/opt/opsany/logs \
+       -v ${INSTALL_PATH}/uploads:/opt/opsany/uploads \
+       -v /etc/localtime:/etc/localtime:ro \
+       ${PAAS_DOCKER_REG}/opsany-paas-mcp-server:${UPDATE_VERSION}
+
+    # MCP JSON
+    MCP_AUTH_TOKEN=$(cat ${INSTALL_PATH}/conf/.mcp_auth_token)
+    /bin/cp conf/opsany-paas/mcp-server/mcp.json ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.json
+    sed -i "s/MCP_AUTH_TOKEN/${MCP_AUTH_TOKEN}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.json
+    sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.json
+    shell_warning_log "======OpsAny: MCP Server Config JSON======"
+    cat ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.json
+}
+
 login_update(){
  #login
     shell_log "Start login Service"
@@ -105,6 +159,10 @@ login_update(){
     -v ${INSTALL_PATH}/conf/opsany-paas/login/login.ini:/etc/supervisord.d/login.ini \
     -v /etc/localtime:/etc/localtime:ro \
     ${PAAS_DOCKER_REG}/opsany-paas-login:${UPDATE_VERSION}
+
+    # OpsAny Database Init
+    docker exec -e DJANGO_SETTINGS_MODULE=settings -e BK_ENV="production" \
+        opsany-paas-login /bin/sh -c "python3 /opt/opsany/paas/login/manage.py migrate"
 }
 
 esb_update(){
@@ -125,6 +183,7 @@ esb_update(){
     UPDATE_VERSION=$1
     /bin/cp conf/opsany-paas/esb/esb.ini ${INSTALL_PATH}/conf/opsany-paas/esb/esb.ini
     /bin/cp conf/opsany-paas/esb/settings_production.py.esb ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
+    sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/PAAS_PAAS_IP/${PAAS_PAAS_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
     sed -i "s/REDIS_SERVER_IP/${REDIS_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-paas/esb/settings_production.py.esb
@@ -229,48 +288,6 @@ proxy_update(){
     docker exec -e OPS_ANY_ENV=production \
         opsany-paas-proxy /bin/sh -c "/usr/local/bin/python3 /opt/opsany-proxy/manage.py migrate >> ${SHELL_LOG}"
 }
-saas_llmops_update(){
-    shell_log "======Update llmops======"
-
-    #llmops Configure
-    UPDATE_VERSION=$1
-    LLMOPS_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.llmops_secret_key)
-    /bin/cp conf/opsany-saas/llmops/* ${INSTALL_PATH}/conf/opsany-saas/llmops/
-    sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-init.py
-    sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-init.py
-    sed -i "s/LLMOPS_SECRET_KEY/${LLMOPS_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-init.py
-    sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MYSQL_OPSANY_LLMOPS_PASSWORD/${MYSQL_OPSANY_LLMOPS_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MONGO_SERVER_IP/${MONGO_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MONGO_SERVER_PORT/${MONGO_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/MONGO_LLMOPS_PASSWORD/${MONGO_LLMOPS_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/REDIS_SERVER_IP/${REDIS_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/REDIS_SERVER_PORT/${REDIS_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/REDIS_SERVER_USER/${REDIS_SERVER_USER}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-    sed -i "s/REDIS_SERVER_PASSWORD/${REDIS_SERVER_PASSWORD}/g" ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py
-
-    # Starter container
-    docker pull ${PAAS_DOCKER_REG}/opsany-saas-ce-llmops:${UPDATE_VERSION}
-    docker stop opsany-saas-ce-llmops && docker rm opsany-saas-ce-llmops
-    docker run -d --restart=always --name opsany-saas-ce-llmops \
-       -p 7000:80 \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-supervisor.ini:/etc/supervisord.d/llmops.ini \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-uwsgi.ini:/opt/opsany/uwsgi/llmops.ini \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-init.py:/opt/opsany/llmops/config/__init__.py \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-prod.py:/opt/opsany/llmops/config/prod.py \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-nginx.conf:/etc/nginx/http.d/default.conf \
-       -v ${INSTALL_PATH}/conf/opsany-saas/llmops/llmops-nginx-main.conf:/etc/nginx/nginx.conf \
-       -v ${INSTALL_PATH}/logs/llmops:/opt/opsany/logs/llmops \
-       -v ${INSTALL_PATH}/uploads:/opt/opsany/uploads \
-       -v /etc/localtime:/etc/localtime:ro \
-       ${PAAS_DOCKER_REG}/opsany-saas-ce-llmops:${UPDATE_VERSION}
-    
-    # Django migrate
-    docker exec -e BK_ENV="production" opsany-saas-ce-llmops /bin/sh -c \
-    "python /opt/opsany/llmops/manage.py migrate --noinput >> ${SHELL_LOG} && python /opt/opsany/llmops/manage.py createcachetable django_cache > /dev/null"
-    update_saas_version llmops 大模型开发平台 ${LLMOPS_SECRET_KEY}
-}
 
 websocket_update(){
 # Websocket
@@ -314,6 +331,8 @@ saas_rbac_update(){
     /bin/cp conf/opsany-saas/rbac/* ${INSTALL_PATH}/conf/opsany-saas/rbac/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
     sed -i "s/RBAC_SECRET_KEY/${RBAC_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/rbac/rbac-prod.py
@@ -353,6 +372,8 @@ saas_workbench_update(){
     /bin/cp conf/opsany-saas/workbench/* ${INSTALL_PATH}/conf/opsany-saas/workbench/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
     sed -i "s/WORKBENCH_SECRET_KEY/${WORKBENCH_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/workbench/workbench-prod.py
@@ -394,6 +415,8 @@ saas_cmdb_update(){
     /bin/cp conf/opsany-saas/cmdb/* ${INSTALL_PATH}/conf/opsany-saas/cmdb/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
     sed -i "s/CMDB_SECRET_KEY/${CMDB_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/cmdb/cmdb-prod.py
@@ -436,6 +459,8 @@ saas_control_update(){
     /bin/cp conf/opsany-saas/control/* ${INSTALL_PATH}/conf/opsany-saas/control/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
     sed -i "s/CONTROL_SECRET_KEY/${CONTROL_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/control/control-prod.py
@@ -475,6 +500,8 @@ saas_job_update(){
     /bin/cp conf/opsany-saas/job/* ${INSTALL_PATH}/conf/opsany-saas/job/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
     sed -i "s/JOB_SECRET_KEY/${JOB_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/job/job-prod.py
@@ -518,6 +545,8 @@ saas_monitor_update(){
     /bin/cp conf/opsany-saas/monitor/* ${INSTALL_PATH}/conf/opsany-saas/monitor/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
     sed -i "s/MONITOR_SECRET_KEY/${MONITOR_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/monitor/monitor-prod.py
@@ -566,6 +595,8 @@ saas_cmp_update(){
     /bin/cp conf/opsany-saas/cmp/* ${INSTALL_PATH}/conf/opsany-saas/cmp/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
     sed -i "s/CMP_SECRET_KEY/${CMP_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/cmp/cmp-prod.py
@@ -609,6 +640,8 @@ saas_bastion_update(){
     /bin/cp conf/opsany-saas/bastion/* ${INSTALL_PATH}/conf/opsany-saas/bastion/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
     sed -i "s/BASTION_SECRET_KEY/${BASTION_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/bastion/bastion-prod.py
@@ -651,6 +684,8 @@ saas_devops_update(){
     /bin/cp conf/opsany-saas/devops/* ${INSTALL_PATH}/conf/opsany-saas/devops/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
     sed -i "s/DEVOPS_SECRET_KEY/${DEVOPS_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/devops/devops-prod.py
@@ -691,6 +726,8 @@ saas_pipeline_update(){
     PIPELINE_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.pipeline_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
     sed -i "s/PIPELINE_SECRET_KEY/${PIPELINE_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/pipeline/pipeline-prod.py
@@ -732,6 +769,8 @@ saas_deploy_update(){
     DEPLOY_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.deploy_secret_key)
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
     sed -i "s/DEPLOY_SECRET_KEY/${DEPLOY_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/deploy/deploy-prod.py
@@ -774,6 +813,8 @@ saas_repo_update(){
     # repo Configure
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
     sed -i "s/REPO_SECRET_KEY/${REPO_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/repo/repo-prod.py
@@ -821,6 +862,8 @@ saas_code_update(){
     /bin/cp conf/opsany-saas/code/* ${INSTALL_PATH}/conf/opsany-saas/code/
     sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
     sed -i "s/LOCAL_IP/${LOCAL_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
+    sed -i "s/PAAS_LOGIN_IP/${PAAS_LOGIN_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
+    sed -i "s/PAAS_ESB_IP/${PAAS_ESB_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
     sed -i "s/CODE_SECRET_KEY/${CODE_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-init.py
     sed -i "s/MYSQL_SERVER_IP/${MYSQL_SERVER_IP}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-prod.py
     sed -i "s/MYSQL_SERVER_PORT/${MYSQL_SERVER_PORT}/g" ${INSTALL_PATH}/conf/opsany-saas/code/code-prod.py
@@ -870,6 +913,9 @@ main(){
 		;;
     paas)
         paas_update $2
+        ;;
+    guacd)
+        guacd_update $2
         ;;
     login)
         login_update $2
@@ -922,8 +968,8 @@ main(){
     cmp)
         saas_cmp_update $2
 	    ;;
-    llmops)
-        saas_llmops_update $2
+    mcp)
+        mcp_update $2
 	    ;;
     bastion)
         saas_bastion_update $2
@@ -940,7 +986,7 @@ main(){
 	    saas_cmp_update $2
 	    saas_bastion_update $2
         saas_monitor_update $2
-        #saas_llmops_update $2
+        mcp_update $2
 		;;
     dev)
         saas_devops_update $2
@@ -962,10 +1008,10 @@ main(){
         saas_pipeline_update $2
         saas_deploy_update $2
         saas_repo_update $2
-        #saas_llmops_update $2
+        mcp_update $2
         ;;
 	help|*)
-	    echo $"Usage: $0 {(paas|login|esb|appengine|proxy|websocket|rbac|workbench|cmdb|control|job|cmp|bastion|base|monitor|devops|all|help) version}"
+	    echo $"Usage: $0 {(paas|login|esb|appengine|proxy|websocket|rbac|workbench|cmdb|control|job|cmp|bastion|base|monitor|devops|mcp|guacd|all|help) version}"
 	    ;;
     esac
 }

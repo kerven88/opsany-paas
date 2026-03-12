@@ -7,8 +7,12 @@
 			show-icon
 			:message="async_error_msg" />
 		<template v-if="authData.account.length == 1">
-			<img class="mt-6 w-[50px]!" :src="config.baseUrlOfImg + authData.account[0].auth_icon?.url" alt="" />
-			<div class="w-full text-lg font-bold mt-3 truncate text-center">{{ authData.account[0].domain || "--" }}</div>
+			<div class="w-full overflow-hidden">
+				<img class="mt-6 mx-auto w-[50px]!" :src="config.baseUrlOfImg + authData.account[0].auth_icon?.url" alt="" />
+				<div class="text-lg font-bold mt-3 truncate text-center" :title="authData.account[0].domain">
+					{{ authData.account[0].domain || "--" }}
+				</div>
+			</div>
 			<div class="mt-12 mb-10 w-full">
 				<a-button class="w-full" type="primary" size="large" shape="round" @click="handleLogin(authData.account[0])">
 					{{ $t("login_btn") }}

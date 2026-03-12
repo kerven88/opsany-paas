@@ -34,6 +34,7 @@ class GetImportModelTree(Component):
     | search_data | str | 否   | 搜索数据 |
     | page | int | 否   | 页码 |
     | per_page | int | 否   | 页数 |
+    | run_status | str | 否 | 运行状态 |
 
     ### 返回结果示例
 
@@ -62,10 +63,11 @@ class GetImportModelTree(Component):
         search_data = forms.Field(required=False)
         page = forms.Field(required=False)
         per_page = forms.Field(required=False)
+        run_status = forms.Field(required=False)
 
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=['model_code', 'data_type', 'parent_model_data_id', 'search_type', 'search_data', 'model_code_list', 'page', 'per_page'])
+            return self.get_cleaned_data_when_exist(keys=['model_code', 'data_type', 'parent_model_data_id', 'search_type', 'search_data', 'model_code_list', 'page', 'per_page', 'run_status'])
 
     # 组件处理入口
     def handle(self):

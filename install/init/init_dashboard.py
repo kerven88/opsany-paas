@@ -75,6 +75,8 @@ def run(grafana_url, grafana_token, grafana_username=None, grafana_password=None
         if status:
             success += 1
             print("[SUCCESS] Create or update dashboard success: {} {}".format(name, message))
+        elif "dashboard has been changed by someone else" in message:
+            print("[SUCCESS] Create or update dashboard already exist Use the parameter  < --overwrite true > to overwrite the dashboard.")
         else:
             error += 1
             print("[ERROR] Create or update all dashboard, error info:{} {}".format(name, message))

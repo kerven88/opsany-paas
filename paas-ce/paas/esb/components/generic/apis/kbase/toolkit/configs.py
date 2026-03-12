@@ -12,4 +12,4 @@ host = SmartHost(
     host_prod=settings.PAAS_DOMAIN,
 )
 
-base_api_url = "/{}/kbase/api/kbase/v0_1/".format(getattr(settings, "BK_ENV", "o"))
+base_api_url = "/{}/kbase/api/kbase/esb/v0_1/".format(getattr(settings, "BK_ENV", "o"))

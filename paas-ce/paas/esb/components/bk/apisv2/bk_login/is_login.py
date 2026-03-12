@@ -62,6 +62,8 @@ class IsLogin(Component):
 
     def handle(self):
         client = tools.LOGINClient(self.outgoing.http_client)
+        if isinstance(self.form_data, dict):
+            self.form_data["request_api_from"] = "esb"
         self.response.payload = client.get(
             host=configs.host,
             path='/login/api/v2/is_login/',

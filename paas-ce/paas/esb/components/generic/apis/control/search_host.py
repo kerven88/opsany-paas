@@ -52,7 +52,7 @@ class SearchHost(Component):
         ]
     }
     ```
-    """#
+    """
 
     # 组件所属系统的系统名
     sys_name = configs.SYSTEM_NAME

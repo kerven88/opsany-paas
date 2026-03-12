@@ -16,7 +16,7 @@ class RunTaskById(Component):
 
     ### 功能描述
 
-    根据ID执行脚本
+    根据作业ID执行作业
 
     ### 请求参数
     {{ common_args_desc }}

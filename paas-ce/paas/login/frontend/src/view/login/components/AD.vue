@@ -110,12 +110,14 @@ const onSuccess = async () => {
 				google_auth_url: config.baseUrlOfImg + data.google_auth_url,
 				google_auth_username: data.google_auth_username,
 				secret: data.secret,
+				show_mfa_days: data.show_mfa_days,
 				...params,
 			});
 		} else {
 			// storageAccessToken.value = data.access_token;
 			// getAuthConfig({ auth_type: "all" });
-			const url = isValidUrl(data.c_url) ? data.c_url : config.baseUrl + (data.c_url == "/" ? "" : data.c_url);
+			const data_curl = data.c_url?.replace(/^\/+/, "") || "";
+			const url = isValidUrl(data.c_url) ? data.c_url : config.baseUrl + data_curl;
 			window.location.href = url;
 		}
 	} catch (error) {

@@ -26,7 +26,8 @@ from bkaccount.opsany_user_auth import OpsAnyRbacUserAuth
 class CheckLoginView(LoginExemptMixin, View):
     def get(self, request):
         # 验证Token参数
-        is_valid, user, message = validate_bk_token(request.GET)
+        data = request.GET.dict()
+        is_valid, user, message = validate_bk_token(data)
         if not is_valid:
             return ApiV1FailJsonResponse(message, code=ApiErrorCodeEnum.PARAM_NOT_VALID)
         return ApiV1OKJsonResponse(_("用户验证成功"), data={'username': user.username, 'bk_role': user.role_code})
@@ -58,7 +59,9 @@ class GetAuthConfigView(LoginExemptMixin, View):
 class UserView(LoginExemptMixin, View):
     def get(self, request):
         # 验证Token参数
-        is_valid, user, message = validate_bk_token(request.GET)
+        data = request.GET.dict()
+        data["request_api_from"] = "login"
+        is_valid, user, message = validate_bk_token(data)
         if not is_valid:
             # 如果是ESB的请求，可以直接从参数中获取用户名
             is_from_esb = is_request_from_esb(request)
@@ -81,7 +84,9 @@ class AllUsersView(LoginExemptMixin, View):
         # 非ESB的请求需要验证登录态 bk_token
         if not is_request_from_esb(request):
             # 验证Token参数
-            is_valid, user, message = validate_bk_token(request.GET)
+            data = request.GET.dict()
+            data["request_api_from"] = "login"
+            is_valid, user, message = validate_bk_token(data)
             if not is_valid:
                 return ApiV1FailJsonResponse(message, code=ApiErrorCodeEnum.PARAM_NOT_VALID)
 
@@ -103,6 +108,7 @@ class BatchUsersView(CsrfAndLoginExemptMixin, View):
         # 非ESB的请求需要验证登录态 bk_token
         if not is_request_from_esb(request):
             # 验证Token参数
+            post_data["request_api_from"] = "login"
             is_valid, user, message = validate_bk_token(post_data)
             if not is_valid:
                 return ApiV1FailJsonResponse(message, code=ApiErrorCodeEnum.PARAM_NOT_VALID)

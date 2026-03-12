@@ -1,5 +1,6 @@
 export default {
 	document_title: "登入 {'|'} 數位化維運平台",
+	demo_tip:'【示範使用者：demo，密碼：123456.coM】示範使用者由於權限限制，僅可查看部分功能，完整功能請私有化部署社群版使用。',
 	header_help: '幫助中心',
 	login_welcome: '歡迎登入數位化維運平台',
 	login_btn: '立即登入',

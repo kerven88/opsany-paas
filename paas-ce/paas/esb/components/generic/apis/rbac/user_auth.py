@@ -31,7 +31,7 @@ class UserAuth(Component):
         "message": "相关信息获取成功"
     }
     ```
-    """#
+    """
 
     # 组件所属系统的系统名
     sys_name = configs.SYSTEM_NAME

@@ -5,6 +5,151 @@ Copyright (c)   2014 rescale
                 2014 - 2016 Mohab Usama
 """
 
+"""
+Guacamole.Status.Code = {
+    /**
+     * The operation succeeded.
+     *
+     * @type {!number}
+     */
+    "SUCCESS": 0x0000, 0
+    /**
+     * The requested operation is unsupported.
+     *
+     * @type {!number}
+     */
+    "UNSUPPORTED": 0x0100, 256
+    /**
+     * The operation could not be performed due to an internal failure.
+     *
+     * @type {!number}
+     */
+    "SERVER_ERROR": 0x0200, 512
+    /**
+     * The operation could not be performed as the server is busy.
+     *
+     * @type {!number}
+     */
+    "SERVER_BUSY": 0x0201, 513
+    /**
+     * The operation could not be performed because the upstream server is not
+     * responding.
+     *
+     * @type {!number}
+     */
+    "UPSTREAM_TIMEOUT": 0x0202, 514
+    /**
+     * The operation was unsuccessful due to an error or otherwise unexpected
+     * condition of the upstream server.
+     *
+     * @type {!number}
+     */
+    "UPSTREAM_ERROR": 0x0203, 515
+    /**
+     * The operation could not be performed as the requested resource does not
+     * exist.
+     *
+     * @type {!number}
+     */
+    "RESOURCE_NOT_FOUND": 0x0204, 516
+    /**
+     * The operation could not be performed as the requested resource is
+     * already in use.
+     *
+     * @type {!number}
+     */
+    "RESOURCE_CONFLICT": 0x0205,517
+    /**
+     * The operation could not be performed as the requested resource is now
+     * closed.
+     *
+     * @type {!number}
+     */
+    "RESOURCE_CLOSED": 0x0206, 518
+    /**
+     * The operation could not be performed because the upstream server does
+     * not appear to exist.
+     *
+     * @type {!number}
+     */
+    "UPSTREAM_NOT_FOUND": 0x0207, 519
+    /**
+     * The operation could not be performed because the upstream server is not
+     * available to service the request.
+     *
+     * @type {!number}
+     */
+    "UPSTREAM_UNAVAILABLE": 0x0208, 520
+    /**
+     * The session within the upstream server has ended because it conflicted
+     * with another session.
+     *
+     * @type {!number}
+     */
+    "SESSION_CONFLICT": 0x0209, 521
+    /**
+     * The session within the upstream server has ended because it appeared to
+     * be inactive.
+     *
+     * @type {!number}
+     */
+    "SESSION_TIMEOUT": 0x020A, 522
+    /**
+     * The session within the upstream server has been forcibly terminated.
+     *
+     * @type {!number}
+     */
+    "SESSION_CLOSED": 0x020B, 523
+    /**
+     * The operation could not be performed because bad parameters were given.
+     *
+     * @type {!number}
+     */
+    "CLIENT_BAD_REQUEST": 0x0300, 768
+    /**
+     * Permission was denied to perform the operation, as the user is not yet
+     * authorized (not yet logged in, for example).
+     *
+     * @type {!number}
+     */
+    "CLIENT_UNAUTHORIZED": 0x0301, 769
+    /**
+     * Permission was denied to perform the operation, and this permission will
+     * not be granted even if the user is authorized.
+     *
+     * @type {!number}
+     */
+    "CLIENT_FORBIDDEN": 0x0303, 771
+    /**
+     * The client took too long to respond.
+     *
+     * @type {!number}
+     */
+    "CLIENT_TIMEOUT": 0x0308, 776
+    /**
+     * The client sent too much data.
+     *
+     * @type {!number}
+     */
+    "CLIENT_OVERRUN": 0x030D, 781
+    /**
+     * The client sent data of an unsupported or unexpected type.
+     *
+     * @type {!number}
+     */
+    "CLIENT_BAD_TYPE": 0x030F, 783
+    /**
+     * The operation failed because the current client is already using too
+     * many resources.
+     *
+     * @type {!number}
+     */
+    "CLIENT_TOO_MANY": 0x031D 797
+};
+
+"""
+
+
 import socket
 import logging
 

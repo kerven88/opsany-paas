@@ -72,4 +72,19 @@ class Migration(migrations.Migration):
                 'verbose_name_plural': '\u7528\u6237\u767b\u5f55\u65e5\u5fd7',
             },
         ),
+        migrations.CreateModel(
+            name='UserAuthToken',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('app_code', models.CharField(max_length=128, verbose_name='蓝鲸智云应用编码')),
+                ('username', models.CharField(max_length=64, verbose_name='用户名')),
+                ('auth_token', models.CharField(max_length=255, verbose_name='token内容')),
+                ('expires', models.DateTimeField(verbose_name='token过期时间')),
+                ('last_accessed_time', models.DateTimeField(auto_now_add=True, verbose_name='最后访问时间')),
+                ('created_time', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),
+            ],
+            options={
+                'db_table': 'esb_user_auth_token',
+            },
+        ),
     ]

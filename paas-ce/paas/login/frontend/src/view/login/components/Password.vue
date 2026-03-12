@@ -102,7 +102,9 @@ const onSuccess = async () => {
 		} else {
 			// storageAccessToken.value = data.access_token;
 			// getAuthConfig({ auth_type: "all" });
-			const url = isValidUrl(data.c_url) ? data.c_url : config.baseUrl + (data.c_url == "/" ? "" : data.c_url);
+			// 仅去掉开头的一个斜杠（如果存在）
+			const data_curl = data.c_url?.replace(/^\/+/, "") || "";
+			const url = isValidUrl(data.c_url) ? data.c_url : config.baseUrl + data_curl;
 			window.location.href = url;
 		}
 	} catch (error) {

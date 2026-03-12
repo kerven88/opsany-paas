@@ -36,11 +36,21 @@ class GetAllUser(Component):
 
     # Form处理参数校验
     class Form(BaseComponentForm):
-        pass
+        extend = forms.CharField(required=False)
+        username = forms.CharField(required=False)
+        chname = forms.CharField(required=False)
+        search_username = forms.CharField(required=False)
+        search_chname = forms.CharField(required=False)
+        search_username_or_chname = forms.CharField(required=False)
+        bk_role = forms.CharField(required=False)
+        order_by = forms.CharField(required=False)
+        search = forms.CharField(required=False)
 
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist()
+            return self.get_cleaned_data_when_exist(keys=[
+                "extend", "username", "chname", "search_username", "search_chname",
+                "search_username_or_chname", "bk_role", "order_by", "search"])
 
     # 组件处理入口
     def handle(self):

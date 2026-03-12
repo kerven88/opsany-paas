@@ -6,7 +6,7 @@ from django import forms
 from common.forms import BaseComponentForm
 from components.component import Component
 from .toolkit import configs
-from .toolkit.tools import base_api_url
+from .toolkit.tools import base_execution_api_url
 
 
 class GetSendFileV2RequestIdStatus(Component):
@@ -74,7 +74,7 @@ class GetSendFileV2RequestIdStatus(Component):
         # 请求系统接口
         response = self.outgoing.http_client.get(
             host=configs.host,
-            path='{}get-send-file-res/'.format(base_api_url.replace("api/control/v0_1/", "api/execution/v0_1/")),
+            path='{}get-send-file-res/'.format(base_execution_api_url),
             params=params,
             cookies=self.request.wsgi_request.COOKIES,
         )

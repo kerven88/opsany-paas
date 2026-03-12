@@ -39,6 +39,7 @@ uninstall_paas(){
     docker stop opsany-paas-login && docker rm -f opsany-paas-login
     docker stop opsany-paas-esb && docker rm -f opsany-paas-esb
     docker stop opsany-paas-appengine && docker rm -f opsany-paas-appengine
+    docker stop opsany-paas-mcp-server && docker rm -f opsany-paas-mcp-server
     #docker stop opsany-paas-paasagent && docker rm -f opsany-paas-paasagent
     docker stop opsany-base-openresty && docker rm -f opsany-base-openresty
     docker stop opsany-paas-websocket && docker rm -f opsany-paas-websocket
@@ -79,7 +80,6 @@ uninstall_saas(){
     docker stop opsany-saas-ce-repo && docker rm -f opsany-saas-ce-repo
     docker stop opsany-saas-ce-pipeline && docker rm -f opsany-saas-ce-pipeline
     docker stop opsany-saas-ce-deploy && docker rm -f opsany-saas-ce-deploy
-    docker stop opsany-saas-ce-llmops && docker rm -f opsany-saas-ce-llmops
     echo -e "\033[32m---------------- SaaS Service Uninstall successfully  ----------------\033[0m"
 }
 
@@ -128,6 +128,12 @@ uninstall_k8s(){
 
 # Main
 main(){
+    echo -e "\033[33m警告：此操作将卸载 OpsAny 服务，可能会导致数据丢失。\033[0m"
+    read -p "确定要继续执行卸载操作吗？(y/N): " confirm
+    if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo -e "\033[32m卸载操作已取消。\033[0m"
+        exit 0
+    fi
     case "$1" in
 	all)
         uninstall_paas

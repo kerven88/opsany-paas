@@ -51,7 +51,7 @@
                     <div class="king-timeline-item">
                         <div class="king-timeline-body">
                             <ol class="guide-list">
-                                <li>本地开发环境搭建教程 <a href="https://docs.bk.tencent.com/blueapps/USAGE.html#2-%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA%EF%BC%88python%EF%BC%89" target="_blank">点击了解</a> ;</li>
+                                <li>本地开发环境搭建教程 <a href="/docs/dev-guide/dev-install/" target="_blank">点击了解</a> ;</li>
                                 <br>
                                 <strong>注意：应用测试、正式部署时会自动安装运行环境，并部署应用</strong>
                             </ol>
@@ -76,7 +76,7 @@
                     <div class="king-timeline-item">
                         <div><strong>Python开发框架（2.0.0）：</strong></div>
                         <div class="king-timeline-body">
-                            <strong>示例1：<a href="${SITE_URL}media/framework_py.tar.gz">点击下载Python开发框架(2.0.0)代码 </a> ，将框架代码放到自己的代码仓库中，并按以下提示修改：</strong>
+                            <strong>示例1：<a href="https://gitee.com/unixhot/opsany-backend-framework" target="_blank">点击下载Python开发框架(2.0.0)代码 </a> ，将框架代码放到自己的代码仓库中，并按以下提示修改：</strong>
                             <ol class="guide-list">
                                 <li>config/__init__.py 文件: `APP_CODE`(应用ID) 和 `SECRET_KEY`(应用TOKEN)
                                     <span>（开发中心 -> 点击应用ID -> 基本信息 中可以查看到这两个值的信息）;</span>
@@ -96,7 +96,7 @@
                                 % endif
                                 )
                                 </p>
-                                <li class="mt10">若需要使用 celery，请修改以下配置：(<a href="http://bkopen-10032816.file.myqcloud.com/paas/celery_packages.zip">点击下载 celery 开发指引</a>)</li>
+                                <li class="mt10">若需要使用 celery，请修改以下配置：</li>
                                 <span class="ml40">config/default.py 文件：IS_USE_CELERY的值设置为: <code>True</code></span><br>
                                 <span class="ml40">config/dev.py 文件：BROKER_URL（请创建本地开发的 celery消息队列，并修改配置信息，推荐使用 RabbitMQ）</span><br>
                                 <span class="ml40">config/default.py 文件：CELERY_IMPORTS（添加celery任务模块）</span>

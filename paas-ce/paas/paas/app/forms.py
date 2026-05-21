@@ -74,29 +74,32 @@ class VCSInfoForm(forms.Form):
     vcs_type = forms.ChoiceField(choices=VCS_TYPE_CHOICES,
                                  error_messages={"required": "代码仓库类型不能为空",
                                                  "invalid_choice": "代码仓库类型不合法, 目前只支持svn 或 git"})
-    vcs_url = forms.CharField(error_messages={"required": "代码仓库地址不能为空"})
-    vcs_username = forms.CharField(error_messages={"required": "用户名不能为空"})
-    vcs_password = forms.CharField(error_messages={"required": "密码不能为空"})
+    # vcs_url = forms.CharField(error_messages={"required": "代码仓库地址不能为空"})
+    # vcs_username = forms.CharField(error_messages={"required": "用户名不能为空"})
+    # vcs_password = forms.CharField(error_messages={"required": "密码不能为空"})
+    vcs_url = forms.CharField(required=False)
+    vcs_username = forms.CharField(required=False)
+    vcs_password = forms.CharField(required=False)
 
     def clean_vcs_url(self):
-        vcs_url = self.cleaned_data["vcs_url"]
+        vcs_url = self.cleaned_data.get("vcs_url")
+        if vcs_url:
+            vcs_url = vcs_url.replace('&nbsp;', ' ').strip()
 
-        vcs_url = vcs_url.replace('&nbsp;', ' ').strip()
+            vcs_type = self.cleaned_data["vcs_type"]
+            pattern = GIT_URL_CHECK_PATTERN if vcs_type == str(VCSTypeEnum.GIT.value) else SVN_URL_CHENK_PATTREN
 
-        vcs_type = self.cleaned_data["vcs_type"]
-        pattern = GIT_URL_CHECK_PATTERN if vcs_type == str(VCSTypeEnum.GIT.value) else SVN_URL_CHENK_PATTREN
-
-        if not pattern.match(vcs_url):
-            self.add_error("vcs_url", "请填写正确的仓库地址")
+            if not pattern.match(vcs_url):
+                self.add_error("vcs_url", "请填写正确的仓库地址！")
 
         return vcs_url
 
     def clean_vcs_username(self):
-        vcs_username = self.cleaned_data["vcs_username"]
+        vcs_username = self.cleaned_data.get("vcs_username") or ""
         return vcs_username.replace('&nbsp;', ' ').strip()
 
     def clean_vcs_password(self):
-        vcs_password = self.cleaned_data["vcs_password"]
+        vcs_password = self.cleaned_data.get("vcs_password") or ""
         return vcs_password.replace('&nbsp;', ' ').strip()
 
 

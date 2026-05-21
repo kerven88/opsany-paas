@@ -18,7 +18,8 @@ from esb.exdb.bkpaas import AppSecureInfo
 
 class AppAuthValidator(BaseValidator):
 
-    def __init__(self, verified_type='signature_or_app_secret', *args, **kwargs):
+    # def __init__(self, verified_type='signature_or_app_secret', *args, **kwargs):
+    def __init__(self, verified_type='bk_token_or_app_secret', *args, **kwargs):
         """
         :param str verified_type: 验证类型，支持"app_secret", "signature", "signature_or_app_secret"
         """
@@ -48,8 +49,30 @@ class AppAuthValidator(BaseValidator):
             else:
                 raise ValidationError('Signature [bk_signature] and APP Secret [bk_app_secret] cannot be empty at the same time')  # noqa
             return
+        elif self.verified_type == 'bk_token_or_app_secret':
+            kwargs = request.kwargs
+            app_secret = request.kwargs.get('bk_app_secret') or request.kwargs.get('app_secret')
+            bk_token = kwargs.get('bk_token')
+
+            if app_secret:
+                validator = AppSecretValidator()
+                validator.validate(request)
+            elif bk_token:
+                from components.bk.apis.bk_login.is_login import IsLogin
+                check_result = IsLogin().invoke(kwargs={'bk_token': bk_token}, request_id=request.request_id)
+                if not check_result['result']:
+                    msg = check_result.get("message")
+                    raise ValidationError(f'bk_token authentication failed(bk_token_or_app_secret), please check if the bk_token is valid({msg})')
+                self.sync_current_username(request, check_result.get('data', {}).get('username', ''))
+                return
+            else:
+                raise ValidationError('Token [bk_token] and APP Secret [bk_app_secret] cannot be empty at the same time')  # noqa
+            return
         else:
             raise ValidationError('Please choose a valid APP verification method')
+
+    def sync_current_username(self, request, username):
+        request.current_user_username = username
 
 
 class AppSecretValidator(BaseValidator):

@@ -2,6 +2,7 @@
     "mcpServers": {
       "opsany-mcp-server": {
         "url": "http://DOMAIN_NAME:8020/sse",
+        "transport": "sse",
         "headers": {
           "username": "admin",
           "user-api-token": "Please modify here",

@@ -1,10 +1,10 @@
-apiVersion: v2.3.2
+apiVersion: v2.3.3
 apiService:
   url: https://DOMAIN_NAME
   bk_app_code: cmdb
   bk_app_secret: CMDB_SECRET_KEY
   super_username: admin  # 管理员用户名 用作部分API接口内部调用
-  api_version: 4.0.2  # esb api服务版本
+  api_version: 4.0.3  # esb 2026-04-11 api服务版本 login 4.0.3
 server:
   host: 0.0.0.0
   port: 8020

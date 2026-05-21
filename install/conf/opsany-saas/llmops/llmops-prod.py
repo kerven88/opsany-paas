@@ -48,6 +48,7 @@ MONGO_CONN = mongoengine.connect(
         port=int("MONGO_SERVER_PORT"),
         username=APP_CODE,
         password="MONGO_LLMOPS_PASSWORD",
+        authSource=APP_CODE,
         connect=False
         # authentication_source="admin",           # 进行身份认证的数据库，通常这个数据库为admin
 )

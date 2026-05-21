@@ -1,40 +1,72 @@
 modules:
   http_2xx:
     prober: http
+    timeout: 10s
     http:
+      tls_config:
+        insecure_skip_verify: true
       preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   http_post_2xx:
     prober: http
+    timeout: 10s
     http:
+      tls_config:
+        insecure_skip_verify: true
       method: POST
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   tcp_connect:
     prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   pop3s_banner:
     prober: tcp
+    timeout: 10s
     tcp:
       query_response:
       - expect: "^+OK"
       tls: true
       tls_config:
         insecure_skip_verify: false
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   grpc:
     prober: grpc
+    timeout: 5s
     grpc:
       tls: true
       preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   grpc_plain:
     prober: grpc
+    timeout: 5s
     grpc:
       tls: false
       service: "service1"
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   ssh_banner:
     prober: tcp
+    timeout: 5s
     tcp:
       query_response:
       - expect: "^SSH-2.0-"
       - send: "SSH-2.0-blackbox-ssh-check"
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   irc_banner:
     prober: tcp
+    timeout: 10s
     tcp:
       query_response:
       - send: "NICK prober"
@@ -42,10 +74,20 @@ modules:
       - expect: "PING :([^ ]+)"
         send: "PONG ${1}"
       - expect: "^:[^ ]+ 001"
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   icmp:
     prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true
+
   icmp_ttl5:
     prober: icmp
     timeout: 5s
     icmp:
       ttl: 5
+      preferred_ip_protocol: "ip4"
+      ip_protocol_fallback: true

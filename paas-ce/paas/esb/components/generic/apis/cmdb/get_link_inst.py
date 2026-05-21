@@ -26,6 +26,7 @@ class GetLinkInst(Component):
     | ----- | ------ | ---- | -------- |
     | model_code | str | 否   | 模型code |
     | model_code_name | str | 是 | 模型名称 |
+    | code | int | 是 | 数据code |
     | field_code | str | 是    | 模型字段 |
     | search | str | 是   | 搜索 |
     | current | int | 否    | 当前页 |
@@ -51,8 +52,9 @@ class GetLinkInst(Component):
 
     # Form处理参数校验
     class Form(BaseComponentForm):
-        model_code_name = forms.Field()
-        model_code = forms.Field()
+        model_code_name = forms.Field(required=False)
+        model_code = forms.Field(required=False)
+        code = forms.Field(required=False)
         field_code = forms.Field()
         search = forms.Field(required=False)
         current = forms.Field(required=False)
@@ -62,7 +64,7 @@ class GetLinkInst(Component):
         # pass
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=["model_code_name", "model_code", "field_code", "search", "current", "pageSize", "search_type", "search_data"])
+            return self.get_cleaned_data_when_exist(keys=["model_code_name", "model_code", "code", "field_code", "search", "current", "pageSize", "search_type", "search_data"])
 
     # 组件处理入口
     def handle(self):

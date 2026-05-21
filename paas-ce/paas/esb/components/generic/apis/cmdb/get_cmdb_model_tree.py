@@ -25,6 +25,12 @@ class GetCmdbModelTree(Component):
 
     #### 接口参数
 
+    | 字段    | 类型     | 必选   | 描述       |
+    | ----- | ------ | ---- | -------- |
+    | model_type    | string | 否 | field_count：字段总数 resource_count：资源总数 |
+    | resource_type    | string | 否    | 资源类型 zc：资产模型 zz：组织模型 yw：业务模型 gl：其他|
+    | tree   | dict | 否    | 数据结构 1：一层 模型 2：二层 组-模型 3 三层 模型类型-模型组-模型 |
+
     ### 返回结果示例
 
     ```python
@@ -47,11 +53,12 @@ class GetCmdbModelTree(Component):
     # Form处理参数校验
     class Form(BaseComponentForm):
         model_type = forms.Field(required=False)
+        resource_type = forms.Field(required=False)
         tree = forms.Field(required=False)
 
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=["model_type", "tree"])
+            return self.get_cleaned_data_when_exist(keys=["model_type", "resource_type", "tree"])
 
     # 组件处理入口
     def handle(self):

@@ -28,6 +28,7 @@ class GetModelField(Component):
     | 字段    | 类型     | 必选   | 描述       |
     | ----- | ------ | ---- | -------- |
     | model_code | str | 否   | 模型code |
+    | field_type | str | 否   | 字段类型 默认全部 0 普通字段 1 从属关系字段 2 连接关系字段 |
 
 
     ### 返回结果示例
@@ -66,11 +67,12 @@ class GetModelField(Component):
     # Form处理参数校验
     class Form(BaseComponentForm):
         model_code = forms.Field(required=False)
+        field_type = forms.Field(required=False)
         field_list = forms.Field(required=False)
 
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=["model_code", "field_list"])
+            return self.get_cleaned_data_when_exist(keys=["model_code", "field_type", "field_list"])
 
     # 组件处理入口
     def handle(self):

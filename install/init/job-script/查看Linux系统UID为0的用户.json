@@ -1,1 +1,8 @@
-{"script_name": "\u67e5\u770bLinux\u7cfb\u7edfUID\u4e3a0\u7684\u7528\u6237", "version": "admin-20241114144019847760", "version_remarks": "\u521d\u59cb\u5316\u5185\u7f6e", "script_type": "sh", "visible": "2", "script": "#!/bin/bash\n# Description:  \u83b7\u53d6Linux UID\u4e3a0\u7684\u7528\u6237\n\necho -e \"---------------- \u5f53\u524dUID\u4e3a0\u7684\u7528\u6237 ----------------\"\nUSER=`cat /etc/passwd|awk -F \":\" '$3==0 {print $0}'|awk  -F \":\" '{print $1}'`\necho \u5f53\u524dUID\u4e3a0\u7684\u7528\u6237\u662f\uff1a\"username: \" ${USER}\n"}
+{
+	"script_name": "查看Linux系统UID为0的用户",
+	"version": "admin-20241114144019847760",
+	"version_remarks": "初始化内置，用于检查Linux系统中所有UID为0（即拥有最高root权限）的账户。该脚本通过读取/etc/passwd文件，筛选并输出UID为0的用户名，常用于系统安全审计与特权账户排查。",
+	"script_type": "sh",
+	"visible": "2",
+	"script": "#!/bin/bash\n# Description:  获取Linux UID为0的用户\n\necho -e \"---------------- 当前UID为0的用户 ----------------\"\nUSER=`cat /etc/passwd|awk -F \":\" '$3==0 {print $0}'|awk  -F \":\" '{print $1}'`\necho 当前UID为0的用户是：\"username: \" ${USER}\n"
+}

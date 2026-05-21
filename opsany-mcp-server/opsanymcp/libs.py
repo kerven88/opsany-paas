@@ -2,92 +2,14 @@ import json
 import os
 from pathlib import Path
 from typing import Optional
+
+from starlette.requests import Request
 from starlette.responses import Response
 
 import yaml
-from requests import request
+
 import urllib3
-from opsanymcp import APIEndpoints
-
 urllib3.disable_warnings()
-
-
-class Request:
-    def __init__(self, config, username, api_token):
-        self.api_service = config.get("apiService")
-        self.url = self.api_service.get("url")
-        self.super_username = self.api_service.get("super_username")
-        self.username = username
-        self.bk_username = username
-        self.is_bk_username = False
-        self.bk_role = 0
-        self.api_token = api_token
-        self.headers = {"Content-Type": "application/json; charset=utf-8", "User-Agent": "OpsAny MCP Server v1"}
-        self.bk_app_code = self.api_service.get("bk_app_code")
-        self.bk_app_secret = self.api_service.get("bk_app_secret")
-        self.status, self.message = self.check_user()
-
-    def check_user(self):
-        if not self.username:
-            return False, "MCP Client headers缺少参数用户名(username)"
-        if not self.api_token:
-            return False, "MCP Client headers缺少参数APIToken(user-api-token), 工作台-个人设置-API Token"
-
-        check_url = APIEndpoints.check_api_token
-        params = {"bk_token": self.api_token, "request_api_from": "esb", "username": self.bk_username}
-        err_title = "用户认证失败: {}"
-        try:
-            url = str(self.url) + check_url
-            res = request("GET", url, data={}, params=params, headers=self.headers, timeout=5, verify=False)
-            try:
-                json_data = res.json()
-                message = json_data.get("message") or "Success"
-                if json_data.get("result"):
-                    user_dict = json_data.get("data") or {}
-                    if isinstance(user_dict, dict):
-                        if self.bk_username == user_dict.get("username"):
-                            self.bk_role = user_dict.get("bk_role") or 0
-                            return True, message
-                        else:
-                            return False, err_title.format("无效的令牌，请检查后重试！")
-                    else:
-                        return False, err_title.format(message)
-                else:
-                    return False, err_title.format(message) + "(工作台-个人设置-API Token，创建并获取Token)"
-            except Exception as e:
-                return False, err_title.format(str(res.content.decode()))
-        except Exception as e:
-            return False, err_title.format(str(e))
-
-    def _request(self, url_path, method, params, body, headers=None, timeout=10):
-        if not headers:
-            headers = self.headers
-        url = str(self.url) + url_path
-        base_params = {
-            "bk_app_code": self.bk_app_code,
-            "bk_app_secret": self.bk_app_secret,
-        }
-        if self.is_bk_username:
-            base_params["bk_username"] = self.bk_username
-        else:
-            base_params["bk_token"] = self.api_token
-            headers["Cookie"] = f"bk_token={self.api_token};opsany_language=chinese_simplified"
-        params.update(base_params)
-        body.update(base_params)
-        try:
-            res = request(method, url, data=json.dumps(body), params=params, headers=headers, timeout=timeout, verify=False)
-            try:
-                json_data = res.json()
-                result = json_data.get("result")
-                message = json_data.get("message")
-                data = json_data.get("data")
-                if not result:
-                    return False, [], message
-                return True, data, message or "Success"
-            except Exception as e:
-                return False, [], f"HTTP 响应解析失败: {res.content.decode()}"
-        except Exception as e:
-            return False, [], f"HTTP 请求失败: {str(url)} {str(e)}"
 
 
 def load_yaml_config(config_path=None) -> tuple:

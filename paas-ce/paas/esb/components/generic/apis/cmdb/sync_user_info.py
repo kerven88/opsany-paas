@@ -22,9 +22,11 @@ class SyncUserInfo(Component):
 
     #### 接口参数
 
-    | 字段    | 类型     | 必选   | 描述       |
-    | ----- | ------ | ---- | -------- |
-
+    | 字段       | 类型   | 必选 | 描述       |
+    | -----     | ------ | ---- | --------   |
+    | force_cmdb  | bool |  否  | 是否强制删除  |
+    | auth_type | string |  否  | 登录域类型   |
+    | domain  | string |  否  | 登录域  |
     ```
 
     ### 返回结果示例
@@ -50,11 +52,13 @@ class SyncUserInfo(Component):
 
     # Form处理参数校验
     class Form(BaseComponentForm):
-        pass
+        force_cmdb = forms.CharField(required=False)
+        auth_type = forms.CharField(required=False)
+        domain = forms.CharField(required=False)
 
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=[])
+            return self.get_cleaned_data_when_exist(keys=["force_cmdb", "auth_type", "domain"])
 
     # 组件处理入口
     def handle(self):

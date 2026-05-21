@@ -25,7 +25,8 @@ class ModelDataCreate(Component):
     | 字段    | 类型     | 必选   | 描述       |
     | ----- | ------ | ---- | -------- |
     | model_code  | string | 是    | 模型唯一标识 |
-    | username    | string | 是    | 获取人用户名（根据当前用户授权数据获取） |
+    | parent_inst   | string | 否    | 从属关系实例ID |
+    | import_type   | str | 否    | 数据来源 |
     | data        | dict | 否    | 新建的数据 |
 
 
@@ -36,11 +37,11 @@ class ModelDataCreate(Component):
         "bk_app_code": "esb-test-app",
         "bk_app_secret": "xxx",
         "bk_token": "xxx-xxx-xxx-xxx-xxx",
-        'model_code': 'xxxxxxxxxxxxxxxx',
-        'username': 'huxingqi',
-        'data': {
-            'SERVER_name': 'www.xxxxxxxxx.com',
-            'SERVER_VISIBLE_NAME': 'www.xxxxxxxxx.com',
+        "model_code": "xxxxxxxxxxxxxxxx",
+        "username": "huxingqi",
+        "data": {
+            "SERVER_name": "xxxxxxxxx",
+            "SERVER_VISIBLE_NAME": "xxxxxxxxx",
             ....
         },
     }
@@ -68,13 +69,14 @@ class ModelDataCreate(Component):
     # Form处理参数校验
     class Form(BaseComponentForm):
         model_code = forms.Field()
-        username = forms.Field()
-        data = forms.Field()
+        parent_inst = forms.Field(required=False)
+        import_type = forms.Field(required=False)
+        data = forms.Field(required=False)
+        data_list = forms.Field(required=False)
 
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=['model_code', 'username', 'data'])
-
+            return self.get_cleaned_data_when_exist(keys=["model_code", "parent_inst", "import_type","data", "data_list"])
 
     # 组件处理入口
     def handle(self):
@@ -82,12 +84,12 @@ class ModelDataCreate(Component):
         params = self.form_data
 
         # 设置当前操作者
-        params['operator'] = self.current_user.username
+        params["operator"] = self.current_user.username
         # print(self.request.wsgi_request.COOKIES)
         # 请求系统接口
         response = self.outgoing.http_client.post(
             host=configs.host,
-            path='{}model-data-operation/'.format(base_api_url),
+            path="{}model-data-operation/".format(base_api_url),
             # params=json.dumps(params),
             data=json.dumps(params),
             # cookies=self.request.wsgi_request.COOKIES,
@@ -95,20 +97,20 @@ class ModelDataCreate(Component):
         )
 
         # 对结果进行解析
-        code = response['code']
+        code = response["code"]
         if code == 200:
             result = {
-                'code': response['code'],
-                'api_code': response['successcode'],
-                'message': response['message'],
-                'result': True,
-                'data': response['data'],
+                "code": response["code"],
+                "api_code": response["successcode"],
+                "message": response["message"],
+                "result": True,
+                "data": response["data"],
             }
         else:
             result = {
-                'api_code': response['errcode'],
-                'result': False,
-                'message': response['message']
+                "api_code": response["errcode"],
+                "result": False,
+                "message": response["message"]
             }
 
         # 设置组件返回结果，payload为组件实际返回结果

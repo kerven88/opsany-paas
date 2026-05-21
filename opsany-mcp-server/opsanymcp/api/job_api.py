@@ -1,15 +1,69 @@
-from opsanymcp.api.base import BaseObj
-from opsanymcp.constants import APIEndpoints
+import inspect
+
+from opsanymcp.api.base_api import BaseObj
 
 
 class JobApi(BaseObj):
-    job_get_tool_market_list = APIEndpoints.job_get_tool_market_list
-    job_run_job_by_id = APIEndpoints.job_run_job_by_id
-    job_run_script_by_id = APIEndpoints.job_run_script_by_id
-    job_run_script_by_script = APIEndpoints.job_run_script_by_script
-    job_get_run_result_by_log_id = APIEndpoints.job_get_run_result_by_log_id
+    job_fields = {
+        "job_id": "作业ID(执行作业时使用该ID)",
+        "name": "作业名称",
+        "visible": "可见范围",
+        "describe": "作业描述",
+        "job_count": "作业步骤数量",
+        "create_time": "创建时间",
+        "update_time": "更新时间",
+        "create_user": "创建人(用户名)",
+        "create_user_ch_name": "创建人(中文名名)",
+        "step_list": "执行步骤",
+        "step_list.id": "执行步骤ID",
+        "step_list.agent_count": "主机个数",
+        "step_list.step_name": "步骤名称",
+        "step_list.step_index": "步骤序号",
+        "step_list.implement_type": "实现类型",
+        "step_list.job_type": "脚本类型",
+        "step_list.parameter": "执行参数",
+        "step_list.time_out": "超时时间",
+        "step_list.exception_handle": "执行逻辑处理：1：执行失败终止整个作业 2：任何情况都继续执行。",
+        "step_list.script": "执行任务脚本信息",
+        "step_list.script.id": "执行任务脚本ID",
+        "step_list.script.create_time": "脚本创建时间",
+        "step_list.script.update_time": "脚本更新时间",
+        "step_list.script.script_name": "脚本名称",
+        "step_list.script.file_name": "脚本文件名称",
+        "step_list.script.create_user": "脚本创建人(用户名)",
+        "step_list.script.create_user_ch_name": "脚本创建人(中文名)",
+        "step_list.script.update_user": "脚本修改人(用户名)",
+        "step_list.script.update_user_ch_name": "脚本修改人(中文名)",
+        "step_list.script.version_remarks": "脚本备注",
+        "step_list.script.script_from": "脚本来源",
+        "step_list.script.version": "脚本版本号",
+        "step_list.script.visible": "可见范围 1：私有 2：公开",
+        "step_list.script.script_type": "脚本类型",
+        "step_list.script.file_url": "脚本地址",
+        "step_list.script.script": "脚本内容",
+    }
+
+    script_fields = {
+        "script_id": "脚本ID(执行脚本时使用该ID)",
+        "script_name": "脚本名称",
+        "file_name": "脚本文件名",
+        "file_url": "脚本文件路径",
+        "version": "脚本版本号",
+        "version_remarks": "版本备注，脚本描述。",
+        "visible": "可见范围",
+        "script_type": "脚本类型",
+        "script_from": "脚本来源",
+        "describe": "脚本描述",
+        "create_time": "创建时间",
+        "update_time": "更新时间",
+        "create_user": "创建人(用户名)",
+        "create_user_ch_name": "创建人(中文名名)",
+        "script": "脚本内容",
+    }
 
     def opsany_job_get_tool_market_list(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         data_type = kwargs.get("data_type")
         job_id = kwargs.get("job_id")
         script_id = kwargs.get("script_id")
@@ -26,81 +80,26 @@ class JobApi(BaseObj):
         if script_id: params["script_id"] = script_id
         if script_name: params["script_name"] = script_name
         if create_user: params["create_user"] = create_user
-        status, data_dict, msg = self.this_request._request(self.job_get_tool_market_list, "GET", params=params, body={})
+        status, data_dict, msg = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
         if not status:
             return self.to_json(False, f"获取作业平台工具市场作业或脚本失败，失败原因：{msg}！")
 
-        job_field_list = {
-            "job_id": "作业ID(执行作业时使用该ID)",
-            "name": "作业名称",
-            "visible": "可见范围",
-            "describe": "作业描述",
-            "job_count": "作业步骤数量",
-            "create_time": "创建时间",
-            "update_time": "更新时间",
-            "create_user": "创建人(用户名)",
-            "create_user_ch_name": "创建人(中文名名)",
-            "step_list": "执行步骤",
-            "step_list.id": "执行步骤ID",
-            "step_list.agent_count": "主机个数",
-            "step_list.step_name": "步骤名称",
-            "step_list.step_index": "步骤序号",
-            "step_list.implement_type": "实现类型",
-            "step_list.job_type": "脚本类型",
-            "step_list.parameter": "执行参数",
-            "step_list.time_out": "超时时间",
-            "step_list.exception_handle": "执行逻辑处理：1：执行失败终止整个作业 2：任何情况都继续执行。",
-            "step_list.script": "执行任务脚本信息",
-            "step_list.script.id": "执行任务脚本ID",
-            "step_list.script.create_time": "脚本创建时间",
-            "step_list.script.update_time": "脚本更新时间",
-            "step_list.script.script_name": "脚本名称",
-            "step_list.script.file_name": "脚本文件名称",
-            "step_list.script.create_user": "脚本创建人(用户名)",
-            "step_list.script.create_user_ch_name": "脚本创建人(中文名)",
-            "step_list.script.update_user": "脚本修改人(用户名)",
-            "step_list.script.update_user_ch_name": "脚本修改人(中文名)",
-            "step_list.script.version_remarks": "脚本备注",
-            "step_list.script.script_from": "脚本来源",
-            "step_list.script.version": "脚本版本号",
-            "step_list.script.visible": "可见范围 1：私有 2：公开",
-            "step_list.script.script_type": "脚本类型",
-            "step_list.script.file_url": "脚本地址",
-            "step_list.script.script": "脚本内容",
-        }
-
-        script_field_list = {
-            "script_id": "脚本ID(执行脚本时使用该ID)",
-            "script_name": "脚本名称",
-            "file_name": "脚本文件名",
-            "file_url": "脚本文件路径",
-            "version": "脚本版本号",
-            "version_remarks": "版本备注",
-            "visible": "可见范围",
-            "script_type": "脚本类型",
-            "script_from": "脚本来源",
-            "describe": "脚本描述",
-            "create_time": "创建时间",
-            "update_time": "更新时间",
-            "create_user": "创建人(用户名)",
-            "create_user_ch_name": "创建人(中文名名)",
-            "script": "脚本内容",
-        }
-
         if self.real_data_type == "table_header":
             if job_id:
-                result = {"columns": job_field_list, "rows": data_dict}
+                result = {"columns": self.job_fields, "rows": data_dict}
             elif script_id:
-                result = {"columns": script_field_list, "rows": data_dict}
+                result = {"columns": self.script_fields, "rows": data_dict}
             else:
-                result = {"columns": {"job_list": job_field_list, "script_list": script_field_list}, "rows": data_dict}
+                result = {"columns": {"job_list": self.job_fields, "script_list": self.script_fields}, "rows": data_dict}
         else:
-            data_dict["job_list_fields"] = job_field_list
-            data_dict["script_list_fields"] = script_field_list
+            data_dict["job_list_fields"] = self.job_fields
+            data_dict["script_list_fields"] = self.script_fields
             result = data_dict
         return self.to_json(True, msg, result)
 
     def opsany_job_get_job_list(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         job_id = kwargs.get("job_id")
         script_name = kwargs.get("name")
         create_user = kwargs.get("create_user")
@@ -109,62 +108,27 @@ class JobApi(BaseObj):
         if job_id: params["job_id"] = job_id
         if script_name: params["script_name"] = script_name
         if create_user: params["create_user"] = create_user
-        status, data_dict, msg = self.this_request._request(self.job_get_tool_market_list, "GET", params=params, body={})
+        status, data_dict, msg = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
         if not status:
             return self.to_json(False, f"获取作业平台工具市场作业或脚本失败，失败原因：{msg}！")
         if not data_dict:
             data_dict = {}
         job_list = data_dict.get("job_list") or []
-        job_field_list = {
-            "job_id": "作业ID(执行作业时使用该ID)",
-            "name": "作业名称",
-            "visible": "可见范围",
-            "describe": "作业描述",
-            "job_count": "作业步骤数量",
-            "create_time": "创建时间",
-            "update_time": "更新时间",
-            "create_user": "创建人(用户名)",
-            "create_user_ch_name": "创建人(中文名名)",
-            "step_list": "执行步骤",
-            "step_list.id": "执行步骤ID",
-            "step_list.agent_count": "主机个数",
-            "step_list.step_name": "步骤名称",
-            "step_list.step_index": "步骤序号",
-            "step_list.implement_type": "实现类型",
-            "step_list.job_type": "脚本类型",
-            "step_list.parameter": "执行参数",
-            "step_list.time_out": "超时时间",
-            "step_list.exception_handle": "执行逻辑处理：1：执行失败终止整个作业 2：任何情况都继续执行。",
-            "step_list.script": "执行任务脚本信息",
-            "step_list.script.id": "执行任务脚本ID",
-            "step_list.script.create_time": "脚本创建时间",
-            "step_list.script.update_time": "脚本更新时间",
-            "step_list.script.script_name": "脚本名称",
-            "step_list.script.file_name": "脚本文件名称",
-            "step_list.script.create_user": "脚本创建人(用户名)",
-            "step_list.script.create_user_ch_name": "脚本创建人(中文名)",
-            "step_list.script.update_user": "脚本修改人(用户名)",
-            "step_list.script.update_user_ch_name": "脚本修改人(中文名)",
-            "step_list.script.version_remarks": "脚本备注",
-            "step_list.script.script_from": "脚本来源",
-            "step_list.script.version": "脚本版本号",
-            "step_list.script.visible": "可见范围 1：私有 2：公开",
-            "step_list.script.script_type": "脚本类型",
-            "step_list.script.file_url": "脚本地址",
-            "step_list.script.script": "脚本内容",
-        }
 
         if self.real_data_type == "table_header":
             if job_id:
-                result = {"columns": job_field_list, "rows": data_dict}
+                rows = data_dict
             else:
-                result = {"columns": job_field_list, "rows": job_list}
+                rows = job_list
+            result = {"columns": self.job_fields, "rows": rows}
         else:
-            data_dict["fields"] = job_field_list
+            data_dict["fields"] = self.job_fields
             result = job_list
         return self.to_json(True, msg, result)
 
     def opsany_job_get_script_list(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         script_id = kwargs.get("script_id")
         script_name = kwargs.get("script_name")
         create_user = kwargs.get("create_user")
@@ -177,55 +141,41 @@ class JobApi(BaseObj):
         if script_id: params["script_id"] = script_id
         if script_name: params["script_name"] = script_name
         if create_user: params["create_user"] = create_user
-        status, data_dict, msg = self.this_request._request(self.job_get_tool_market_list, "GET", params=params, body={})
+        status, data_dict, msg = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
         if not status:
             return self.to_json(False, f"获取作业平台工具市场作业或脚本失败，失败原因：{msg}！")
         if not data_dict:
             data_dict = {}
         script_list = data_dict.get("script_list") or []
-        script_field_list = {
-            "script_id": "脚本ID(执行脚本时使用该ID)",
-            "script_name": "脚本名称",
-            "file_name": "脚本文件名",
-            "file_url": "脚本文件路径",
-            "version": "脚本版本号",
-            "version_remarks": "版本备注",
-            "visible": "可见范围",
-            "script_type": "脚本类型",
-            "script_from": "脚本来源",
-            "describe": "脚本描述",
-            "create_time": "创建时间",
-            "update_time": "更新时间",
-            "create_user": "创建人(用户名)",
-            "create_user_ch_name": "创建人(中文名名)",
-            "script": "脚本内容",
-        }
 
         if self.real_data_type == "table_header":
             if script_id:
-                result = {"columns": script_field_list, "rows": data_dict}
+                result = {"columns": self.script_fields, "rows": data_dict}
             else:
-                result = {"columns": script_field_list, "rows": script_list}
+                result = {"columns": self.script_fields, "rows": script_list}
         else:
-            data_dict["fields"] = script_field_list
+            data_dict["fields"] = self.script_fields
             data_dict["script_list"] = script_list
             result = data_dict
         return self.to_json(True, msg, result)
 
     def opsany_job_run_job_by_id(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         job_id = kwargs.get("job_id")
         body = {"job_id": job_id}
-        status, data_dict, msg = self.this_request._request(self.job_run_job_by_id, "POST", params={}, body=body)
+        status, data_dict, msg = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
         if not status:
             return self.to_json(False, f"执行作业失败，失败原因：{msg}！")
-
         return self.to_json(True, msg, {"log_id": data_dict})
 
     def opsany_job_run_script_by_id(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         script_id = kwargs.get("script_id")
         server = kwargs.get("server") or ""
         parameter = kwargs.get("parameter")
-        run_describe = kwargs.get("run_describe") or f"CMP调用，执行人：{self.this_request.username}!"
+        run_describe = kwargs.get("run_describe") or f"CMP调用，执行人：{self.username}!"
         time_out = kwargs.get("time_out") or 60
         if not server:
             return self.to_json(False, f"执行作业失败，缺少主机信息(server: 多条用逗号隔开)！")
@@ -242,13 +192,15 @@ class JobApi(BaseObj):
             "run_describe": run_describe,
             "time_out": time_out,
         }
-        status, data_dict, msg = self.this_request._request(self.job_run_script_by_id, "POST", params={}, body=body)
+        status, data_dict, msg = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
         if not status:
             return self.to_json(False, f"执行作业失败，失败原因：{msg}！")
 
         return self.to_json(True, msg, {"log_id": data_dict})
 
     def opsany_job_run_script_by_script(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         task_name = kwargs.get("task_name")
         script_format = kwargs.get("script_format")
         script_type = kwargs.get("script_type") or "content"
@@ -256,7 +208,7 @@ class JobApi(BaseObj):
         server_type = kwargs.get("server_type") or "host_name"
         server = kwargs.get("server") or ""
         parameter = kwargs.get("parameter")
-        run_describe = kwargs.get("run_describe") or f"CMP调用，执行人：{self.this_request.username}!"
+        run_describe = kwargs.get("run_describe") or f"CMP调用，执行人：{self.username}!"
         timeout = kwargs.get("timeout") or 60
         if not server:
             return self.to_json(False, f"执行作业失败，缺少主机信息(server: 多条用逗号隔开)！")
@@ -277,16 +229,18 @@ class JobApi(BaseObj):
             "run_describe": run_describe,
             "timeout": timeout,
         }
-        status, data_dict, msg = self.this_request._request(self.job_run_script_by_script, "POST", params={}, body=body)
+        status, data_dict, msg = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
         if not status:
             return self.to_json(False, f"执行作业失败，失败原因：{msg}！")
 
         return self.to_json(True, msg, {"log_id": data_dict})
 
     def opsany_job_get_run_result_by_log_id(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         log_id = kwargs.get("log_id")
         params = {"task_log_id": log_id}
-        status, data_dict, msg = self.this_request._request(self.job_get_run_result_by_log_id, "GET", params=params, body={})
+        status, data_dict, msg = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
         if not status:
             return self.to_json(False, f"获取执行结果失败，失败原因：{msg}！")
 

@@ -318,15 +318,6 @@ APP_CREATE = (function(){
         check_vcs_url:function(is_focus){
           var flag = true;
           var vcs_url = $.trim($("#vcs_url").val());
-          // if (vcs_url.length != $("#vcs_url").val().length) {
-          //     $("#tip_vcs_url").html('请填写正确的仓库地址, 不能包含空格');
-          //     if(is_focus==1){
-          //       $("#vcs_url").focus();
-          //     }
-          //     return false;
-          // } else {
-          //     $("#tip_vcs_url").html('');
-          // }
 
           var vcs_type = $("input[name='vcs_type']:checked").val();
           if(!vcs_type){
@@ -338,7 +329,7 @@ APP_CREATE = (function(){
             var url_pattern = new RegExp("(http[s]{0,1}|svn)://", "gi");
           }
 
-          if( vcs_url.match(url_pattern) ){
+          if( vcs_url === '' || vcs_url.match(url_pattern) ){
               $("#tip_vcs_url").html('');
           }else{
               $("#tip_vcs_url").html('请填写正确的仓库地址');
@@ -352,37 +343,25 @@ APP_CREATE = (function(){
         check_vcs_username:function(is_focus){
           var flag = true;
           var vcs_username = $.trim($("#vcs_username").val());
-          if(vcs_username == ''){
-              $("#tip_vcs_username").html('请填写账号');
-              if(is_focus==1){
-                $("#vcs_username").focus();
-              }
-              flag = false;
-          }else{
-              $("#tip_vcs_username").html('');
-          }
+
+          $("#tip_vcs_username").html('');
+          flag = true;
+
           return flag;
         },
         check_vcs_password:function(is_focus){
           var flag = true;
           var vcs_password = $.trim($("#vcs_password").val());
-          if(vcs_password == ''){
-              $("#tip_vcs_password").html('请填写密码');
-              if(is_focus==1){
-                $("#vcs_password").focus();
-              }
-              flag = false;
-          }else{
-              $("#tip_vcs_password").html('');
-          }
+
+          $("#tip_vcs_password").html('');
+          flag = true;
           return flag;
         },
         check_app_tags:function(){
             var flag = true;
-            var apptags = $.trim($("#app_tags").val());
-            if(apptags == ''){
-                flag = false;
-            }
+
+            $("#tip_vcs_password").html('');
+            flag = true;
             return flag;
         },
         check_db_host:function(){

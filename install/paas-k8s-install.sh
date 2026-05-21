@@ -193,6 +193,23 @@ appengine_install(){
     shell_log "Config appengine Service"
 }  
 
+mcp_install(){
+    # MCP Server Config
+    CMDB_SECRET_KEY=$(cat ${INSTALL_PATH}/conf/.cmdb_secret_key)
+    if [ -f ${INSTALL_PATH}/conf/.mcp_auth_token ];then
+        MCP_AUTH_TOKEN=$(cat ${INSTALL_PATH}/conf/.mcp_auth_token)
+    else
+        MCP_AUTH_TOKEN=$(uuid -v4)
+        echo $MCP_AUTH_TOKEN > ${INSTALL_PATH}/conf/.mcp_auth_token
+    fi
+    sed -i "s/MCP_AUTH_TOKEN/${MCP_AUTH_TOKEN}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    sed -i "s/DOMAIN_NAME/${DOMAIN_NAME}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    sed -i "s/CMDB_SECRET_KEY/${CMDB_SECRET_KEY}/g" ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml
+    /bin/cp ${INSTALL_PATH}/conf/opsany-paas/mcp-server/config.yaml ${INSTALL_PATH}/kubernetes/helm/opsany-paas/mcp-server/
+    /bin/cp ${INSTALL_PATH}/conf/opsany-paas/mcp-server/mcp.ini ${INSTALL_PATH}/kubernetes/helm/opsany-paas/mcp-server/
+    shell_log "Config MCP Server Service"
+}  
+
 websocket_install(){
     #websocket
     shell_log "Config websocket Service"
@@ -337,6 +354,9 @@ mongodb_init(){
 # Main
 main(){
     case "$1" in
+    mcp)
+        mcp_install
+        ;;
     mysql)
         mysql_init
         ;;
@@ -354,6 +374,7 @@ main(){
           esb_install
           appengine_install
           websocket_install
+          mcp_install
           grafana_install
           openresty_install
 	  ;;
@@ -364,5 +385,3 @@ main(){
 }
 
 main $1
-
-

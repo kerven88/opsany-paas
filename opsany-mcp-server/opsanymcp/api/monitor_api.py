@@ -1,11 +1,12 @@
-from opsanymcp.api.base import BaseObj
-from opsanymcp.constants import APIEndpoints
+import inspect
+
+from opsanymcp.api.base_api import BaseObj
 
 
 class MonitorApi(BaseObj):
-    monitor_alert_info = APIEndpoints.monitor_alert_info
-
     def opsany_monitor_alert_info(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         page = kwargs.get("page", 1)
         page_size = kwargs.get("page_size", 50)
         host_name = kwargs.get("host_name")
@@ -18,7 +19,7 @@ class MonitorApi(BaseObj):
             "level_id": level_id,
         }
         body = {"page": page, "pageSize": page_size, "filter": filter}
-        status, data_list, mess = self.this_request._request(self.monitor_alert_info, "POST", params={}, body=body)
+        status, data_list, mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
         if not status:
             return self.to_json(False, mess)
         headers = {

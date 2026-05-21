@@ -26,6 +26,7 @@ class GetInstByRelData(Component):
     | ----- | ------ | ---- | -------- |
     | inst_model_code | str | 否   | 模型code |
 	| model_code_name | str | 是 | 模型名称 |
+	| code | str | 是 | 实例ID |
 	| field_code | str | 是    | 模型字段 |
 	| search | str | 是   | 搜索 |  
 	| current | int | 是    | 当前页 |
@@ -49,9 +50,10 @@ class GetInstByRelData(Component):
 
     # Form处理参数校验
     class Form(BaseComponentForm):
-        model_code_name = forms.Field()
-        inst_model_code = forms.Field()
+        model_code_name = forms.Field(required=False)
+        inst_model_code = forms.Field(required=False)
         field_code = forms.Field()
+        code = forms.Field(required=False)
         search = forms.Field(required=False)
         search_type = forms.Field(required=False)
         search_data = forms.Field(required=False)
@@ -60,7 +62,7 @@ class GetInstByRelData(Component):
         # pass
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=["model_code_name", "inst_model_code", "field_code", "search", "current", "pageSize", "search_type", "search_data"])
+            return self.get_cleaned_data_when_exist(keys=["model_code_name", "inst_model_code", "code", "field_code", "search", "current", "pageSize", "search_type", "search_data"])
 
     # 组件处理入口
     def handle(self):

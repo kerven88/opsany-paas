@@ -10,7 +10,7 @@
 CDIR=$(pwd)
 SHELL_NAME="saas-ce-install.sh"
 SHELL_LOG="${SHELL_NAME}.log"
-SAAS_VERSION=2.3.2
+SAAS_VERSION=2.3.3
 
 # Shell Log Record
 shell_log(){
@@ -39,8 +39,7 @@ if [ ! -f ./install.config ];then
       shell_error_log "======Error: Please Change Directory to ${INSTALL_PATH}/install======"
       exit
 else
-    grep '^[A-Z]' install.config > install.env
-    source ./install.env && rm -f install.env
+    source ./install.config
     export MYSQL_PWD=${MYSQL_ROOT_PASSWORD}
 fi
 
@@ -53,6 +52,10 @@ fi
 # Install initialization
 install_init(){
     #SaaS Log Directory
+    if [ -f "${INSTALL_PATH}/conf/.workbench_secret_key" ];then
+    shell_error_log "OpsAny already Installed. Exiting."
+    exit 0
+fi
     mkdir -p ${INSTALL_PATH}/logs/{rbac,workbench,cmdb,control,job,monitor,cmp,bastion,devops,pipeline,repo,code,deploy,proxy,llmops,opsany-mcp-server}
 }
 
@@ -476,16 +479,10 @@ saas_monitor_deploy(){
 
     # Install Grafana Zabbix Plugin
     ZABBIX_GRAFANE_PLUGIN_NAME="alexanderzobnin-zabbix-app-4.3.1.zip"
-    if [ -f "/tmp/${ZABBIX_GRAFANE_PLUGIN_NAME}" ]; then
-        cd /tmp && unzip -oq ${ZABBIX_GRAFANE_PLUGIN_NAME}
-        docker cp /tmp/alexanderzobnin-zabbix-app opsany-base-grafana:/var/lib/grafana/plugins/
-        docker restart opsany-base-grafana
-    else
-        cd /tmp && wget https://opsany.oss-cn-beijing.aliyuncs.com/${ZABBIX_GRAFANE_PLUGIN_NAME}
-        unzip -oq ${ZABBIX_GRAFANE_PLUGIN_NAME}
-        docker cp /tmp/alexanderzobnin-zabbix-app opsany-base-grafana:/var/lib/grafana/plugins/
-        docker restart opsany-base-grafana
-    fi
+    cd /tmp && cp /opt/opsany-paas/external/${ZABBIX_GRAFANE_PLUGIN_NAME} /tmp/
+    unzip -oq ${ZABBIX_GRAFANE_PLUGIN_NAME}
+    docker cp /tmp/alexanderzobnin-zabbix-app opsany-base-grafana:/var/lib/grafana/plugins/
+    docker restart opsany-base-grafana
 }
 
 saas_cmp_deploy(){
@@ -943,6 +940,9 @@ zabbix_install(){
      -e MYSQL_USER="${ZABBIX_DB_USER}" \
      -e MYSQL_PASSWORD="${ZABBIX_DB_PASSWORD}" \
      -e MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD}" \
+     -e ZBX_CACHESIZE="256M" \
+     -e ZBX_HISTORYCACHESIZE="128M" \
+     -e ZBX_TRENDCACHESIZE="128M" \
      -p 10051:10051 \
      -v ${INSTALL_PATH}/zabbix-volume/alertscripts:/usr/lib/zabbix/alertscripts \
      -v ${INSTALL_PATH}/zabbix-volume/externalscripts:/usr/lib/zabbix/externalscripts \
@@ -1014,8 +1014,8 @@ saas_base_init(){
 
     shell_log "======Init: Download Agent Package======"
     cd $INSTALL_PATH/uploads/
-    wget https://opsany.oss-cn-beijing.aliyuncs.com/opsany-agent-v2.3.1.tar.gz
-    tar zxf opsany-agent-v2.3.1.tar.gz
+    wget https://opsany.oss-cn-beijing.aliyuncs.com/opsany-agent-v2.3.3.tar.gz
+    tar zxf opsany-agent-v2.3.3.tar.gz
 }
 
 admin_password_init(){

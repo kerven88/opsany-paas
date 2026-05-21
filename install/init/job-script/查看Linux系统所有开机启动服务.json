@@ -1,1 +1,8 @@
-{"script_name": "\u67e5\u770bLinux\u7cfb\u7edf\u6240\u6709\u5f00\u673a\u542f\u52a8\u670d\u52a1", "version": "admin-20241114144023244738", "version_remarks": "\u521d\u59cb\u5316\u5185\u7f6e", "script_type": "sh", "visible": "2", "script": "#!/bin/bash\n# Description:  \u83b7\u53d6Linux \u5f00\u673a\u542f\u52a8\u7684\u670d\u52a1\n\necho -e \"------ \u5f00\u673a\u542f\u52a8\u7684\u670d\u52a1 ------\"\necho -e \"\\n`systemctl list-units --all --type=service --state=running|grep -e .service`\"\n"}
+{
+	"script_name": "查看Linux系统所有开机启动服务",
+	"version": "admin-20241114144023244738",
+	"version_remarks": "初始化内置，用于获取Linux系统中当前正在运行的服务状态列表。该脚本通过systemctl命令筛选并展示所有处于运行状态（running）的.service服务单元，适用于排查系统当前的后台服务运行情况。",
+	"script_type": "sh",
+	"visible": "2",
+	"script": "#!/bin/bash\n# Description:  获取Linux 开机启动的服务\n\necho -e \"------ 开机启动的服务 ------\"\necho -e \"\\n`systemctl list-units --all --type=service --state=running|grep -e .service`\"\n"
+}

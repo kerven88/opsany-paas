@@ -92,7 +92,8 @@ class PostLoginLog(Component):
             }
         else:
             result = {
-                'api_code': response['errcode'],
+                'code': response.get('code'),
+                'api_code': response.get('errcode') or response.get('code'),
                 'result': False,
                 'message': response['message']
             }

@@ -1,24 +1,26 @@
-from opsanymcp.api.base import BaseObj
-from opsanymcp.constants import APIEndpoints
+import inspect
+
+from opsanymcp.api.base_api import BaseObj
 
 
 class CMDBApi(BaseObj):
-    cmdb_api_resources_api = APIEndpoints.cmdb_api_resources_api
-    cmdb_get_resource_fields_api = APIEndpoints.cmdb_get_resource_fields_api
-    cmdb_get_resource_api = APIEndpoints.cmdb_get_resource_api
-
     def opsany_cmdb_api_resources(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         limit = kwargs.get("limit", 100)
         output = kwargs.get("output", "")
+        resource_type = kwargs.get("resource_type", "zc,zz,yw,gl")
         try:
             limit = int(limit) or 100
         except Exception:
             limit = 100
 
         params = {"tree": "3"}
+        if resource_type:
+            params["resource_type"] = resource_type
         if output =="extend":
             params["model_type"] = "resource_count,field_count"
-        status, model_list, mess = self.this_request._request(self.cmdb_api_resources_api, "GET", params=params, body={})
+        status, model_list, mess = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
         if not status:
             return self.to_json(False, mess)
         headers = {
@@ -80,14 +82,17 @@ class CMDBApi(BaseObj):
         return self.to_json(True, mess, result)
 
     def opsany_cmdb_get_resource_fields(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
         model_code = kwargs.get("model_code")
         if not model_code:
-            return self.to_json(False, "resource parameter is required")
+            return self.to_json(False, "model_code parameter is required")
         params = {
             "model_code": model_code,
+            "field_type": kwargs.get("field_type") or "01",
         }
         params.update(self.base_params)
-        status, field_list, mess = self.this_request._request(self.cmdb_get_resource_fields_api, "GET", params=params, body={})
+        status, field_list, mess = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
         if not status:
             return self.to_json(False, f"获取当前资源 {model_code} 字段失败: {mess}，请使用 api-resources 获取支持的资源！")
         headers = {
@@ -97,9 +102,16 @@ class CMDBApi(BaseObj):
             "code": "字段标识",
             "index": "字段序号",
             "type_name": "字段类型",
+            "not_null": "是否必填",
+            "built_in": "是否内置",
+            "describe": "字段描述",
             "field_group_code": "字段类分组",
-            "is_relationship_field": "字段属性",
+            "is_relationship_field": "字段属性(1:从属 2：连接 空:普通字段)",
             "attribute": "字段相关配置",
+            "attribute.关系类型": "字段关系类型配置",
+            "attribute.用户提示": "字段提示",
+            "attribute.校验规则": "字段校验规则",
+            "attribute.rule": "字段校验规则",
         }
         dict_data_list = []
         list_data_list = []
@@ -123,6 +135,8 @@ class CMDBApi(BaseObj):
         return self.to_json(True, mess, result)
 
     def opsany_cmdb_get_resource(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
         model_code = kwargs.get("model_code")
         resource_id = kwargs.get("resource_id")
         search = kwargs.get("search")
@@ -158,20 +172,20 @@ class CMDBApi(BaseObj):
             params["search_data"] = search
 
         params.update(self.base_params)
-        fields_status, field_list, fields_mess = self.this_request._request(self.cmdb_get_resource_fields_api, "GET", params=params, body={})
+        fields_dict = {"model_code": model_code, "field_type": "01"}
+        fields_status, field_list, fields_mess = self.call("opsany_cmdb_get_resource_fields", "GET", params=fields_dict, body={})
         if not fields_status:
             return self.to_json(False, f"获取当前资源 {model_code} 字段失败: {fields_mess}，请使用 api-resources 获取支持的资源！")
 
-        data_status, data_dict, data_mess = self.this_request._request(self.cmdb_get_resource_api, "GET", params=params, body={})
+        data_status, data_dict, data_mess = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
         if not data_status:
             return self.to_json(False,f"获取当前资源 {model_code} 数据失败: {data_mess}，请使用 api-resources 获取支持的资源！")
 
         if not data_dict:
             return self.to_json(False,f"获取当前资源 {model_code} 获取数据为空！")
-
-        list_data_list = []
-
-        if not fields:
+        if fields == "all":
+            new_field_list = field_list
+        elif not fields:
             new_field_list = field_list[:8]
         else:
             new_field_list = []
@@ -203,4 +217,300 @@ class CMDBApi(BaseObj):
             headers.insert(0, ["序号", "code"])
             data_list.insert(0, headers)
             result = data_list
+        return self.to_json(True, mess, result)
+
+    def opsany_cmdb_get_can_add_link_inst_list(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        code = kwargs.get("code")
+        field_code = kwargs.get("field_code")
+        search = kwargs.get("search")
+        current = kwargs.get("current", 1)
+        pageSize = kwargs.get("pageSize", 10)
+        search_type = kwargs.get("search_type")
+        search_data = kwargs.get("search_data")
+        if not code:
+            return self.to_json(False,f"code 参数必传！")
+        if not field_code:
+            return self.to_json(False,f"field_code 参数必传！")
+
+        params = {
+            "code": code,
+            "field_code": field_code,
+            "search": search,
+            "current": current,
+            "pageSize": pageSize,
+            "search_type": search_type,
+            "search_data": search_data,
+        }
+        data_status, data_dict, data_mess = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
+        if not data_status:
+            return self.to_json(False,f"获取当前资源 {code} 数据失败: {data_mess}！")
+
+        if not data_dict:
+            return self.to_json(False,f"获取当前资源 {code} 获取数据为空！")
+
+        # new_field_list = {
+        #     "field_list": "关联关系实例字段",
+        #     "field_list.code": "字段标识",
+        #     "field_list.name": "字段名称",
+        #     "field_list.attribute": "字段相关配置",
+        #     "field_list.index": "字段序号",
+        #     "field_list.type_name": "字段类型",
+        #     "inst_data": "关联关系实例数据",
+        #     "inst_data.total": "关联关系实例数据",
+        #     "inst_data.current": "关联关系实例数据",
+        #     "inst_data.pageSize": "关联关系实例数据",
+        #     "inst_data.data": "关联关系实例数据",
+        #     "inst_data.data.name": "实例唯一标识",
+        #     "inst_data.data.visible_name": "实例名称",
+        #     "inst_data.data.code": "实例ID",
+        #     "inst_data.data.model_code": "实例模型code",
+        #     "inst_data.data.data": "实例数据对象",
+        #     "inst_data.data.parent_inst": "实例从属标识",
+        #     "inst_data.data.created_at": "实例创建时间",
+        #     "inst_data.data.updated_at": "实例更新时间",
+        # }
+        field_list = data_dict.get("field_list") or {}
+        inst_data = data_dict.get("inst_data") or {}
+        current = inst_data.get("current")
+        page_size = inst_data.get("pageSize")
+        total = inst_data.get("total")
+        data_list = inst_data.get("data", [])
+        for i in inst_data.get("data", []):
+            i.pop("link_inst", None)
+        total_pages = (total + page_size - 1) // page_size
+        mess = f"第 {current} 页，共 {total_pages} 页；当前页 {len(data_list)} 条，总共 {total} 条。"
+
+        result = {"columns": field_list, "rows": inst_data}
+
+        return self.to_json(True, mess, result)
+
+    def opsany_cmdb_get_resource_link_inst_list(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        code = kwargs.get("code")
+        field_code = kwargs.get("field_code")
+        search = kwargs.get("search")
+        current = kwargs.get("current", 1)
+        pageSize = kwargs.get("pageSize", 10)
+        search_type = kwargs.get("search_type")
+        search_data = kwargs.get("search_data")
+        if not code:
+            return self.to_json(False,f"code 参数必传！")
+        if not field_code:
+            return self.to_json(False,f"field_code 参数必传！")
+
+        params = {
+            "code": code,
+            "field_code": field_code,
+            "search": search,
+            "current": current,
+            "pageSize": pageSize,
+            "search_type": search_type,
+            "search_data": search_data,
+        }
+        data_status, data_dict, data_mess = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
+        if not data_status:
+            return self.to_json(False,f"获取当前资源 {code} 数据失败: {data_mess}！")
+
+        if not data_dict:
+            return self.to_json(False,f"获取当前资源 {code} 获取数据为空！")
+
+        # new_field_list = {
+        #     "field_list": "关联关系实例字段",
+        #     "field_list.code": "字段标识",
+        #     "field_list.name": "字段名称",
+        #     "field_list.attribute": "字段相关配置",
+        #     "field_list.index": "字段序号",
+        #     "field_list.type_name": "字段类型",
+        #     "inst_data": "关联关系实例数据",
+        #     "inst_data.total": "关联关系实例数据",
+        #     "inst_data.current": "关联关系实例数据",
+        #     "inst_data.pageSize": "关联关系实例数据",
+        #     "inst_data.data": "关联关系实例数据",
+        #     "inst_data.data.name": "实例唯一标识",
+        #     "inst_data.data.visible_name": "实例名称",
+        #     "inst_data.data.code": "实例ID",
+        #     "inst_data.data.model_code": "实例模型code",
+        #     "inst_data.data.data": "实例数据对象",
+        #     "inst_data.data.parent_inst": "实例从属标识",
+        #     "inst_data.data.created_at": "实例创建时间",
+        #     "inst_data.data.updated_at": "实例更新时间",
+        # }
+        field_list = data_dict.get("field_list") or {}
+        inst_data = data_dict.get("inst_data") or {}
+        current = inst_data.get("current")
+        page_size = inst_data.get("pageSize")
+        total = inst_data.get("total")
+        data_list = inst_data.get("data", [])
+        for i in inst_data.get("data", []):
+            i.pop("link_inst", None)
+        total_pages = (total + page_size - 1) // page_size
+        mess = f"第 {current} 页，共 {total_pages} 页；当前页 {len(data_list)} 条，总共 {total} 条。"
+
+        result = {"columns": field_list, "rows": inst_data}
+
+        return self.to_json(True, mess, result)
+
+    def opsany_cmdb_get_resource_link_inst_count(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        code = kwargs.get("code")
+        if not code:
+            return self.to_json(False,f"code 参数必传！")
+        params = {
+            "code": code,
+        }
+        data_status, data_dict, data_mess = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
+        if not data_status:
+            return self.to_json(False,f"获取当前资源 {code} 数据失败: {data_mess}！")
+
+        if not data_dict:
+            return self.to_json(False,f"获取当前资源 {code} 获取数据为空！")
+
+        field_list = {
+            "parent": "从属关系",
+            "parent.code": "字段标识",
+            "parent.name": "字段名称",
+            "parent.attribute": "字段相关配置",
+            "parent.index": "字段序号",
+            "parent.type_name": "字段类型",
+            "parent.type": "关联关系类型(1: 从属 2: 连接)",
+            "parent.count": "实例数量",
+            "link": "关联关系实例数据",
+            "link.code": "字段标识",
+            "link.name": "字段名称",
+            "link.attribute": "字段相关配置",
+            "link.index": "字段序号",
+            "link.type_name": "字段类型",
+            "link.type": "关联关系类型(1: 从属 2: 连接)",
+            "link.count": "实例数量",
+        }
+        result = {"columns": field_list, "rows": data_dict}
+        return self.to_json(True, "Success", result)
+
+    def opsany_cmdb_resource_add_link_inst(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        code = kwargs.get("code")
+        if not code:
+            return self.to_json(False,f"code 参数必传！")
+        body = {
+            "code": code,
+            "api_from": "mcp",
+            "model_code": kwargs.get("model_code"),
+            "field_code": kwargs.get("field_code"),
+            "target_code_list": kwargs.get("target_code_list"),
+            "method": "POST",
+        }
+        data_status, data_list, data_mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
+        if not data_status:
+            return self.to_json(False,f"获取当前资源 {code} 数据失败: {data_mess}！")
+
+        field_list = {}
+
+        result = {"columns": field_list, "rows": data_list}
+
+        return self.to_json(True, data_mess, result)
+
+    def opsany_cmdb_resource_remove_link_inst(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        code = kwargs.get("code")
+        if not code:
+            return self.to_json(False,f"code 参数必传！")
+        body = {
+            "code": code,
+            "api_from": "mcp",
+            "model_code": kwargs.get("model_code"),
+            "field_code": kwargs.get("field_code"),
+            "target_code_list": kwargs.get("target_code_list"),
+            "method": "DELETE",
+        }
+        data_status, data_list, data_mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
+        if not data_status:
+            return self.to_json(False,f"获取当前资源 {code} 数据失败: {data_mess}！")
+
+        field_list = {}
+        result = {"columns": field_list, "rows": data_list}
+        return self.to_json(True, data_mess, result)
+
+    def opsany_cmdb_create_resource(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        body = {
+            "model_code": kwargs.get("model_code"),
+            "username": self.username,
+            "parent_inst": kwargs.get("parent_inst"),
+            "import_type": kwargs.get("import_type", "API创建"),
+            "data": kwargs.get("data"),
+        }
+        status, data_list, mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
+        if not status:
+            return self.to_json(False, mess)
+
+        result_headers = {
+            "code": "资源ID",
+            "model_code": "资源类型",
+            "data": "数据Dict",
+            "parent_inst": "从属实例",
+        }
+
+        if self.real_data_type == "table_header":
+            result = {"columns": result_headers, "rows": data_list}
+        else:
+            result = []
+        return self.to_json(True, mess, result)
+
+    def opsany_cmdb_update_resource(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        body = {
+            "model_code": kwargs.get("model_code"),
+            "username": self.username,
+            "code": kwargs.get("code"),
+            "data": kwargs.get("data"),
+            "parent_inst": kwargs.get("parent_inst"),
+        }
+        status, data_list, mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
+        if not status:
+            return self.to_json(False, mess)
+
+        result_headers = {
+            "code": "资源ID",
+            "model_code": "资源类型",
+            "data": "数据Dict",
+            "parent_inst": "从属实例",
+        }
+
+        if self.real_data_type == "table_header":
+            result = {"columns": result_headers, "rows": data_list}
+        else:
+            result = []
+        return self.to_json(True, mess, result)
+
+    def opsany_cmdb_delete_resource(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        body = {
+            "model_code": kwargs.get("model_code"),
+            "username": self.username,
+            "code": kwargs.get("code"),
+        }
+        status, data_list, mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
+        if not status:
+            return self.to_json(False, mess)
+
+        result_headers = {
+            "code": "资源ID",
+            "model_code": "资源类型",
+            "data": "数据Dict",
+            "parent_inst": "从属实例",
+        }
+
+        if self.real_data_type == "table_header":
+            result = {"columns": result_headers, "rows": data_list}
+        else:
+            result = []
         return self.to_json(True, mess, result)

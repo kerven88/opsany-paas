@@ -13,18 +13,7 @@ CTIME=$(date "+%Y-%m-%d-%H-%M")
 CDIR=$(pwd)
 SHELL_NAME="llmops-install.sh"
 SHELL_LOG="${SHELL_NAME}.log"
-
-# Install Inspection
-if [ ! -f ./install.config ];then
-      echo "Please Change Directory to ${INSTALL_PATH}/install"
-      exit
-else
-    grep '^[A-Z]' install.config > install.env
-    source ./install.env && rm -f install.env
-    if [ -z "$ADMIN_PASSWORD" ];then
-        source ${INSTALL_PATH}/conf/.passwd_env
-    fi
-fi
+INSTALL_PATH="/data/opsany"
 
 # Shell Log Record
 shell_log(){
@@ -36,14 +25,23 @@ shell_log(){
 # Check Install requirement
 install_init(){
     shell_log "=====Begin: Init======"
-    mkdir -p ${INSTALL_PATH}/{ollama-volume}
+    mkdir -p ${INSTALL_PATH}/{ollama-volume,openclaw-volume}
+    chown -R 1000:1000 ${INSTALL_PATH}/{ollama-volume,openclaw-volume}
 }
 
 ollama_install(){
     shell_log "=====Ollama: Start Ollama======"
     docker run -d --restart=always --name opsany-base-ollama \
-    -p 8020:11434 -v ${INSTALL_PATH}/ollama-volume:/root/.ollama \
-    docker.m.daocloud.io/ollama/ollama:0.9.3
+    -p 8021:11434 -v ${INSTALL_PATH}/ollama-volume:/root/.ollama \
+    docker.m.daocloud.io/ollama/ollama:0.18.2
+}
+
+openclaw_install(){
+    shell_log "=====OpenClaw: Start OpenClaw======"
+    docker run -d --restart=always --name openclaw-gateway \
+    -p 8022:18789 \
+    -v ${INSTALL_PATH}/openclaw-volume:/home/node \
+    opsany/openclaw:2026.3.13 "node  dist/index.js gateway --bind lan --port 18789"
 }
 
 opsai_uninstall(){

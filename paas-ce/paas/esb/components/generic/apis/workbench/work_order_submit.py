@@ -15,7 +15,7 @@ class WorkOrderSubmit(Component):
 
     ### 功能描述
 
-    第三方取到转工单
+    第三方渠道转工单
 
     ### 请求参数
     {{ common_args_desc }}

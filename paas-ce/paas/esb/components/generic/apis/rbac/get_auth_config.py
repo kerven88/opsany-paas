@@ -22,6 +22,12 @@ class GetAuthConfig(Component):
 
     #### 接口参数
 
+    | 字段           | 类型   | 必选 | 描述       |
+    | -----          | ------ | ---- | --------   |
+    | auth_type | string |  是  | 数据类型   |
+    | domain  | string |  否  | 登录域  |
+    | username  | string |  否  | 用户名  |
+
     ### 请求参数示例
 
     ### 返回结果示例
@@ -38,10 +44,11 @@ class GetAuthConfig(Component):
     class Form(BaseComponentForm):
         auth_type = forms.CharField(required=False)
         domain = forms.CharField(required=False)
+        username = forms.CharField(required=False)
 
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=["domain", "auth_type"])
+            return self.get_cleaned_data_when_exist(keys=["domain", "auth_type", "username"])
 
     # 组件处理入口
     def handle(self):

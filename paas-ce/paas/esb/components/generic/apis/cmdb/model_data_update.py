@@ -25,9 +25,9 @@ class ModelDataUpdate(Component):
     | 字段    | 类型     | 必选   | 描述       |
     | ----- | ------ | ---- | -------- |
     | model_code  | string | 是    | 模型唯一标识 |
-    | username    | string | 是    | 获取人用户名（根据当前用户授权数据获取） |
     | code    | string | 是    | 修改数据的ID|
-    | data        | dict | 否    | 新建的数据 |
+    | parent_inst   | string | 否    | 从属关系实例ID |
+    | data   | dict | 否    | 修改的数据 |
 
 
     ### 请求参数示例
@@ -69,13 +69,13 @@ class ModelDataUpdate(Component):
     # Form处理参数校验
     class Form(BaseComponentForm):
         model_code = forms.Field()
-        username = forms.Field()
-        code = forms.Field()
-        data = forms.Field()
+        parent_inst = forms.Field(required=False)
+        code = forms.Field(required=False)
+        data = forms.Field(required=False)
 
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=['model_code', 'username', 'code', 'data'])
+            return self.get_cleaned_data_when_exist(keys=['model_code', "parent_inst", 'code', 'data'])
 
 
     # 组件处理入口

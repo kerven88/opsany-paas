@@ -1,1 +1,8 @@
-{"script_name": "\u67e5\u770bLinux\u4ea4\u6362\u5206\u533a\u8fdb\u7a0b\u5360\u7528", "version": "admin-20241114144026746092", "version_remarks": "\u521d\u59cb\u5316\u5185\u7f6e", "script_type": "sh", "visible": "2", "script": "#!/bin/bash\n# \u83b7\u53d6\u4ea4\u6362\u5206\u533a\u5360\u7528\nSUM=0  \nOVERALL=0  \nfor DIR in `find /proc/ -maxdepth 1 -type d | egrep \"^/proc/[0-9]\"`; do  \n    PID=`echo $DIR | cut -d / -f 3`  \n    PROG_NAME=`ps -p $PID -o comm --no-headers`  \n    for SWAP in `grep Swap $DIR/smaps 2>/dev/null| awk '{ print $2 }'`; do  \n        let SUM=$SUM+$SWAP  \n    done  \n    echo \"PID=$PID - Swap used: $SUM - ($PROG_NAME )\"  \n    let OVERALL=$OVERALL+$SUM  \n    SUM=0  \ndone  \necho \"Overall swap used: $OVERALL\"\n"}
+{
+	"script_name": "查看Linux交换分区进程占用",
+	"version": "admin-20241114144026746092",
+	"version_remarks": "初始化内置，用于扫描Linux系统各进程的Swap（交换分区）实际占用情况。脚本会遍历/proc目录，精准计算并过滤出正在使用Swap的进程，按占用量降序排列输出Top占用进程及系统总用量。适用于系统内存排查、定位导致频繁换页的异常进程。",
+	"script_type": "sh",
+	"visible": "2",
+	"script": "#!/bin/bash\n# 获取交换分区占用\nSUM=0  \nOVERALL=0  \nfor DIR in `find /proc/ -maxdepth 1 -type d | egrep \"^/proc/[0-9]\"`; do  \n    PID=`echo $DIR | cut -d / -f 3`  \n    PROG_NAME=`ps -p $PID -o comm --no-headers`  \n    for SWAP in `grep Swap $DIR/smaps 2>/dev/null| awk '{ print $2 }'`; do  \n        let SUM=$SUM+$SWAP  \n    done  \n    echo \"PID=$PID - Swap used: $SUM - ($PROG_NAME )\"  \n    let OVERALL=$OVERALL+$SUM  \n    SUM=0  \ndone  \necho \"Overall swap used: $OVERALL\"\n"
+}

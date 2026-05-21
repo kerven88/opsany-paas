@@ -77,7 +77,6 @@
                 <label class="control-label">仓库地址</label>
                 <div class="controls">
                   <input type="text" class="form-control" name="vcs_url" id="vcs_url" value="" style="width:270px" title="">
-                  <span class="required">*</span>
                   <span id="tip_vcs_url" class="tips mt10 mb5 ml150 error"></span>
                   <span class="help-block" id="vcs_url_help">支持以下协议：http(s)://, git://</span>
                 </div>
@@ -86,7 +85,6 @@
                 <label class="control-label"><span id="vcs_text">Git</span>账号</label>
                 <div class="controls">
                   <input type="text" class="form-control" name="vcs_username" id="vcs_username" value="" onblur="APP_CREATE.check_vcs_username()" style="width:270px" title="">
-                  <span class="required">*</span>
                   <span id="tip_vcs_username" class="tips mt10 mb5 ml150 error"></span>
                   <span class="help-block"></span>
                 </div>
@@ -98,7 +96,6 @@
                   <input type="text" style="display:none">
                   <input type="password" style="display:none">
                   <input type="text" onfocus="this.type='password'" class="form-control" name="vcs_password" id="vcs_password" value="" onblur="APP_CREATE.check_vcs_password()" style="width:270px" title="">
-                  <span class="required">*</span>
                   <span id="tip_vcs_password" class="tips mt10 mb5 ml150 error"></span>
                 </div>
               </div>

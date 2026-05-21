@@ -12,7 +12,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django_redis import get_redis_connection
 from paramiko.ssh_exception import NoValidConnectionsError
 
-from bastion.component.redis_client_conn import get_redis_dict_data_async  // 更新导入
+from bastion.component.redis_client_conn import get_redis_dict_data_async
 
 try:
     from django.utils.encoding import smart_unicode
@@ -81,10 +81,10 @@ class WebSSH(AsyncWebsocketConsumer):
 
     # 获取登录前缓存的登录信息
     # 异步获取链接配置
-    async def get_link_config(self, token):
+    def get_link_config(self, token):
         try:
             if not self.link_config:
-                self.link_config = await get_redis_dict_data_async("cache", token)  // 异步调用
+                self.link_config = get_redis_dict_data_async("cache", token)
             return True, self.link_config
         except Exception as e:
             app_logging.error("[ERROR] SSH web socket, get_link_config error: {}, param: {}".format(str(e), str(token)[:5]))
@@ -105,14 +105,14 @@ class WebSSH(AsyncWebsocketConsumer):
         return status
 
     #校验token的可用性，用户是否管理员或外部登录，
-    async def check_token(self, check_user=False):
+    def check_token(self, check_user=False):
         request_param = self.get_request_param_dict()
         if not self.token:
             if request_param.get("token"):
                 self.token = request_param.get("token")
             else:
                 self.token = self.get_cookie().get("link_token")
-        status, data = await self.get_link_config(self.token)  // 异步调用
+        status, data = self.get_link_config(self.token)
         if status and data:
             if not check_user:
                 status = self.check_link_user(data.get("user_id"))
@@ -128,10 +128,10 @@ class WebSSH(AsyncWebsocketConsumer):
             return False, WebSocketStatusCode.USER_ERROR, {}
         return False, WebSocketStatusCode.PARAM_ERROR, {}
 
-    async def close_connect(self, text):
+    def close_connect(self, text):
         try:
-            await self.send(text_data=str(text))  
-            await self.close()
+            self.send(text_data=str(text))
+            self.close()
         except Exception as e:
             pass
         return
@@ -280,7 +280,7 @@ class WebSSH(AsyncWebsocketConsumer):
             return False, None
 
     # 创建本地登录SSH连接
-    async def _create_ssh_link(self, credential, host, password, timeout=5):
+    def _create_ssh_link(self, credential, host, password, timeout=5):
         """
         创建SSH连接
         """
@@ -387,7 +387,7 @@ class WebSSH(AsyncWebsocketConsumer):
         # app_logging.info(sock)
 
         if token_data.get("login_type") == "password":
-            status, code = await self._create_ssh_link(credential_host.credential, self.host, password, timeout=timeout)
+            status, code = self._create_ssh_link(credential_host.credential, self.host, password, timeout=timeout)
         else:
             status, code = self.client_ssh_by_ssh_key(ip, port, username, ssh_key, password, sock, timeout=timeout)
         if not status:
@@ -418,20 +418,20 @@ class WebSSH(AsyncWebsocketConsumer):
                 return False, WebSocketStatusCode.HOST_TYPE_ERROR
             status, code = self._create_ssh_link(credential_host.credential, self.host, password, timeout=timeout)
         else:
-            status, code = await self._create_cache_ssh_link(data, timeout)
+            status, code = self._create_cache_ssh_link(data, timeout)
 
         if not status:
             return False, code
         return True, ""
 
-    async def connect(self):
+    def connect(self):
         self.wait_time = time.time()
-        await self.accept()
+        self.accept()
         # 验证token
         self.ssh = paramiko.SSHClient()
         status, code, data = self.check_token()
         if status in [False]:
-            await self.close_connect(code)
+            self.close_connect(code)
             return
         try:
             status, code = self.create_ssh_link(data)
@@ -439,11 +439,11 @@ class WebSSH(AsyncWebsocketConsumer):
                 self.session_log = self.create_session_log(data)
                 self.start_ssh()
             else:
-                await self.close_connect(code)
+                self.close_connect(code)
                 return
         except Exception as e:
             app_logging.error("[ERROR] Create ssh link error: {}".format(str(e)))
-            await self.close_connect(WebSocketStatusCode.SSH_LINK_ERROR)
+            self.close_connect(WebSocketStatusCode.SSH_LINK_ERROR)
             return
 
     # SSH开始工作，进入两个线程
@@ -463,7 +463,7 @@ class WebSSH(AsyncWebsocketConsumer):
         # interactivessh.setDaemon = True
         interactivessh.start()
 
-    async def disconnect(self, close_code):
+    def disconnect(self, close_code):
         self.close_ssh()
         time.sleep(0.5)
         try:
@@ -475,14 +475,14 @@ class WebSSH(AsyncWebsocketConsumer):
         except Exception as e:
             app_logging.error("[ERROR] Update Session Log error: {}, param: {}".format(str(e), str(self.session_log)))
         with contextlib.suppress(Exception):
-            await self.close()  
+            self.close()
 
-    def close_ssh(self):  // 改为异步方法
+    def close_ssh(self):
         self.queue.publish(self.channel_name, json.dumps(['close']))
-        redis_client = await get_async_redis_connection("cache")  // 异步获取连接
-        await redis_client.set(self.stop_key, "true")  // 异步调用
-        await redis_client.expire(self.stop_key, 10)  // 异步调用
-        await asyncio.sleep(2)  // 使用异步sleep
+        redis_client = get_async_redis_connection("cache")
+        redis_client.set(self.stop_key, "true")
+        redis_client.expire(self.stop_key, 10)
+        asyncio.sleep(2)
 
     @property
     def queue(self):

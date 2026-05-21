@@ -20,6 +20,17 @@ class GetWorkOrderEvent(Component):
     ### 请求参数
     {{ common_args_desc }}
 
+    #### 接口参数
+
+    | 字段    | 类型     | 必选   | 描述       |
+    | ----- | ------ | ---- | -------- |
+    | id    | int | 否 | 工单模板ID 根据工单获取工单详情包括字段数据 |
+    | event_type    | int | 否 | 告警类型 |
+    | username    | string | 否 | 用户名 |
+    | form_fields    | bool | 否 | 是否包含字段内容，当获取少量数据时使用，防止数据过大 |
+    | folder_id    | int | 否 | 目录ID 空获取全部 |
+    | data_type    | string | 否    | 工单类型，all： 全部类型 tags：我的收藏 request：请求管理 change：变更管理 event：事件管理 issues：问题管理 recently：最近提单|
+    | name_or_describe   | string | 否    | 名字和描述模糊搜索 |
 
     ### 返回结果示例
 
@@ -42,11 +53,14 @@ class GetWorkOrderEvent(Component):
         id = forms.Field(required=False)
         event_type = forms.Field(required=False)
         username = forms.Field(required=False)
+        folder_id = forms.Field(required=False)
+        data_type = forms.Field(required=False)
         form_fields = forms.Field(required=False)
-    
+        name_or_describe = forms.Field(required=False)
+
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=["id", "event_type", "username", "form_fields"])
+            return self.get_cleaned_data_when_exist(keys=["id", "event_type", "username", "folder_id", "data_type", "form_fields", "name_or_describe"])
 
     # 组件处理入口
     def handle(self):

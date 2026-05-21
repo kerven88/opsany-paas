@@ -1,1 +1,8 @@
-{"script_name": "\u67e5\u770b\u8fde\u63a5\u672c\u673a\u7684IP\u5730\u5740\u7edf\u8ba1", "version": "admin-20241114144021954742", "version_remarks": "\u521d\u59cb\u5316\u5185\u7f6e", "script_type": "sh", "visible": "2", "script": "#!/bin/bash\n# Description:  \u83b7\u53d6Linux \u672c\u673a\u88ab\u8fde\u63a5\u7684IP Top 5\n\n# Get Data/Time\nCTIME=$(date \"+%Y-%m-%d %H-%M-%S\")\necho -e \"------ $CTIME connect Top 10 ------\"\nnetstat -ant|awk 'NR > 2  {print $5}'|awk -F \":\" '{print $1}'|grep -v \"^$\"|sort -nr|uniq -c|sort -nr\n"}
+{
+	"script_name": "查看连接本机的IP地址统计",
+	"version": "admin-20241114144021954742",
+	"version_remarks": "初始化内置，用于统计当前连接到本机的外部 IP 地址及连接数，并按数量降序排列。脚本使用高性能的 ss 命令替代传统的 netstat，精准过滤出已建立（ESTABLISHED）的 TCP 连接，有效帮助运维人员快速排查异常访问、恶意扫描及 DDoS 攻击。",
+	"script_type": "sh",
+	"visible": "2",
+	"script": "#!/bin/bash\n# Description:  获取Linux 本机被连接的IP Top 5\n\n# Get Data/Time\nCTIME=$(date \"+%Y-%m-%d %H-%M-%S\")\necho -e \"------ $CTIME connect Top 10 ------\"\nnetstat -ant|awk 'NR > 2  {print $5}'|awk -F \":\" '{print $1}'|grep -v \"^$\"|sort -nr|uniq -c|sort -nr\n"
+}

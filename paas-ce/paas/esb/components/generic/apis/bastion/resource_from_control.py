@@ -49,7 +49,7 @@ class ResourceFromControl(Component):
     # Form处理参数校验
     class Form(BaseComponentForm):
         resource_type = forms.CharField()
-        credential = forms.Field()
+        credential = forms.Field(required=False)
         data_list = forms.Field()
         params = forms.Field(required=False)
 

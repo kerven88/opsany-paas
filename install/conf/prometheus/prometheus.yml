@@ -47,6 +47,10 @@ scrape_configs:
       token: CONSUL_TOKEN
       services: []
     relabel_configs:
+      # 新增：如果 tags 中包含 blackbox_ 开头的标签，则丢弃
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_.*
+        action: drop
       - regex: __meta_consul_service_metadata_(.+) # 添加meta的重新匹配，Mate数据为Labels标签
         action: labelmap   #
       - source_labels: [__meta_consul_service_id]  # 过滤consul自测服务数据 consul 127.0.0.1:8300
@@ -77,7 +81,14 @@ scrape_configs:
       - source_labels: ['__meta_consul_service_metadata_instance']  # 定义endpoint的参数 target=instance
         target_label: __param_target
 
-  - job_name: "consul-blackbox_http" # black_exporter
+  # ==================== Blackbox 探测任务（按频率拆分） ====================
+  # 说明：每个协议支持 1m,5m,10m,15m,20m,30m 六种频率，通过 Consul 标签区分
+  # 标签格式：blackbox_<协议>_<频率>，例如 blackbox_http_1m, blackbox_tcp_5m 等
+  # 动态 Blackbox 地址：优先使用 Consul Meta 中的 blackbox_addr，若缺失则回退到 PROM_CONSUL_SERVER:9115
+
+  # ---------- 1. HTTP GET 探测 ----------
+  - job_name: "consul-blackbox_http_1m"
+    scrape_interval: 1m
     metrics_path: /probe
     params:
       module: [http_2xx]
@@ -87,7 +98,7 @@ scrape_configs:
         services: []
     relabel_configs:
       - source_labels: [__meta_consul_tags]
-        regex: .*blackbox_http.*
+        regex: .*blackbox_http_1m.*
         action: keep
       - regex: __meta_consul_service_metadata_(.+)
         action: labelmap
@@ -95,5 +106,1014 @@ scrape_configs:
         target_label: __param_target
       - source_labels: [__param_target]
         target_label: instance
-      - target_label: __address__
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_5m"
+    scrape_interval: 5m
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_5m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_10m"
+    scrape_interval: 10m
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_10m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_15m"
+    scrape_interval: 15m
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_15m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_20m"
+    scrape_interval: 20m
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_20m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_30m"
+    scrape_interval: 30m
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_30m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  # ---------- 2. HTTP POST 探测 ----------
+  - job_name: "consul-blackbox_http_post_1m"
+    scrape_interval: 1m
+    metrics_path: /probe
+    params:
+      module: [http_post_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_post_1m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_post_5m"
+    scrape_interval: 5m
+    metrics_path: /probe
+    params:
+      module: [http_post_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_post_5m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_post_10m"
+    scrape_interval: 10m
+    metrics_path: /probe
+    params:
+      module: [http_post_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_post_10m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_post_15m"
+    scrape_interval: 15m
+    metrics_path: /probe
+    params:
+      module: [http_post_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_post_15m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_post_20m"
+    scrape_interval: 20m
+    metrics_path: /probe
+    params:
+      module: [http_post_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_post_20m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_http_post_30m"
+    scrape_interval: 30m
+    metrics_path: /probe
+    params:
+      module: [http_post_2xx]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_http_post_30m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  # ---------- 3. TCP 端口探测 ----------
+  - job_name: "consul-blackbox_tcp_1m"
+    scrape_interval: 1m
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_tcp_1m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_tcp_5m"
+    scrape_interval: 5m
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_tcp_5m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_tcp_10m"
+    scrape_interval: 10m
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_tcp_10m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_tcp_15m"
+    scrape_interval: 15m
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_tcp_15m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_tcp_20m"
+    scrape_interval: 20m
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_tcp_20m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_tcp_30m"
+    scrape_interval: 30m
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_tcp_30m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  # ---------- 4. ICMP Ping 探测 ----------
+  - job_name: "consul-blackbox_icmp_1m"
+    scrape_interval: 1m
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_icmp_1m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_icmp_5m"
+    scrape_interval: 5m
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_icmp_5m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_icmp_10m"
+    scrape_interval: 10m
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_icmp_10m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_icmp_15m"
+    scrape_interval: 15m
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_icmp_15m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_icmp_20m"
+    scrape_interval: 20m
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_icmp_20m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_icmp_30m"
+    scrape_interval: 30m
+    metrics_path: /probe
+    params:
+      module: [icmp]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_icmp_30m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  # ---------- 5. gRPC 探测 ----------
+  - job_name: "consul-blackbox_grpc_1m"
+    scrape_interval: 1m
+    metrics_path: /probe
+    params:
+      module: [grpc]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_grpc_1m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_grpc_5m"
+    scrape_interval: 5m
+    metrics_path: /probe
+    params:
+      module: [grpc]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_grpc_5m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_grpc_10m"
+    scrape_interval: 10m
+    metrics_path: /probe
+    params:
+      module: [grpc]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_grpc_10m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_grpc_15m"
+    scrape_interval: 15m
+    metrics_path: /probe
+    params:
+      module: [grpc]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_grpc_15m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_grpc_20m"
+    scrape_interval: 20m
+    metrics_path: /probe
+    params:
+      module: [grpc]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_grpc_20m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_grpc_30m"
+    scrape_interval: 30m
+    metrics_path: /probe
+    params:
+      module: [grpc]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_grpc_30m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  # ---------- 6. SSH Banner 探测 ----------
+  - job_name: "consul-blackbox_ssh_1m"
+    scrape_interval: 1m
+    metrics_path: /probe
+    params:
+      module: [ssh_banner]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_ssh_1m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_ssh_5m"
+    scrape_interval: 5m
+    metrics_path: /probe
+    params:
+      module: [ssh_banner]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_ssh_5m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_ssh_10m"
+    scrape_interval: 10m
+    metrics_path: /probe
+    params:
+      module: [ssh_banner]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_ssh_10m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_ssh_15m"
+    scrape_interval: 15m
+    metrics_path: /probe
+    params:
+      module: [ssh_banner]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_ssh_15m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_ssh_20m"
+    scrape_interval: 20m
+    metrics_path: /probe
+    params:
+      module: [ssh_banner]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_ssh_20m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
+        replacement: PROM_CONSUL_SERVER:9115
+
+  - job_name: "consul-blackbox_ssh_30m"
+    scrape_interval: 30m
+    metrics_path: /probe
+    params:
+      module: [ssh_banner]
+    consul_sd_configs:
+      - server: 'PROM_CONSUL_SERVER:8500'
+        token: CONSUL_TOKEN
+        services: []
+    relabel_configs:
+      - source_labels: [__meta_consul_tags]
+        regex: .*blackbox_ssh_30m.*
+        action: keep
+      - regex: __meta_consul_service_metadata_(.+)
+        action: labelmap
+      - source_labels: [__meta_consul_service_address, __meta_consul_service_port]
+        separator: ":"
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_instance]
+        target_label: instance
+      - source_labels: [__meta_consul_service_metadata_blackbox_addr]
+        target_label: __address__
+      - source_labels: [__address__]
+        regex: '^$'
+        target_label: __address__
         replacement: PROM_CONSUL_SERVER:9115

@@ -82,11 +82,11 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
             status, res_data = auth_object.get_auth_config(auth_type="white_list")
             if not status:
                 return True, "Success"
-            white_list = res_data.get("white_list") or ""
 
             if not isinstance(res_data, dict):  return True, "Success"
             if res_data.get("enabled") is False: return True, "Success"
-
+            white_list = res_data.get("white_list") or ""
+            if not white_list: return True, "Success"
             x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
             if x_forwarded_for:
                 ip = x_forwarded_for.split(',')[0]  # 第一个IP是原始客户端
@@ -100,18 +100,12 @@ class BaseLoginView(CsrfAndLoginExemptMixin, View):
                         networks.append(ipaddress.ip_network(entry, strict=False))
                     # 解析为单IP (自动转换为/32或/128)
                     else:
-                        networks.append(ipaddress.ip_address(entry))
+                        networks.append(ipaddress.ip_network(entry, strict=False))
                 except ValueError:
                     continue
                     # networks.append(entry)
             ip_obj = ipaddress.ip_address(ip)
-            if any(
-                    (isinstance(net, ipaddress.IPv4Network) and (ip_obj in net)) or
-                    (isinstance(net, ipaddress.IPv6Network) and (ip_obj in net)) or
-                    (isinstance(net, ipaddress.IPv4Address) and (ip_obj == net)) or
-                    (isinstance(net, ipaddress.IPv6Address) and (ip_obj == net))
-                    for net in networks
-            ):
+            if any(ip_obj in net for net in networks):
                 return True, "Success"
             return False, "IP登录限制({}), 请联系管理员加入白名单!".format(ip)
         except Exception as e:
@@ -557,9 +551,8 @@ class LoginV3View(BaseLoginView):
             username = username + "@" + domain
         auth_object = OpsAnyRbacUserAuth(auth_type=auth_type, username=username, password=password)
         status, message = self._check_white_list(username, request, auth_object)
-        # status, message = True, "Success"
         if not status:
-            return JsonResponse(success(SuccessStatusCode.OPERATION_SUCCESS))
+            return JsonResponse(error(ErrorStatusCode.CUSTOM_ERROR,custom_message=message))
         (show_mfa_days, show_verify_code, show_login_lock,
          while_show_verify_code, while_show_login_lock, error_times, password_retry_times_enabled,
          password_retry_times_config, unlock_times_str) \

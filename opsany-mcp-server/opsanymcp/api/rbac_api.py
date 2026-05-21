@@ -1,9 +1,9 @@
-from opsanymcp.api.base import BaseObj
-from opsanymcp.constants import APIEndpoints
+import inspect
+
+from opsanymcp.api.base_api import BaseObj
 
 
 class RbacApi(BaseObj):
-    rbac_get_all_user = APIEndpoints.rbac_get_all_user
 
     user_headers = {
         "id": "用户ID",
@@ -30,27 +30,29 @@ class RbacApi(BaseObj):
         "domain": "登录域",
     }
 
-    def opsany_rbac_get_or_search_all_user(self, **kwarg):
-        limit = kwarg.get("limit")
+    def opsany_rbac_get_or_search_all_user(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 30)
+        limit = kwargs.get("limit")
         try:
             limit = int(limit) or 100
         except Exception:
             limit = 100
-        if self.this_request.bk_role not in [1]:
+        if self.bk_role not in [1]:
             return self.to_json(False, "只有管理员权限可以获取到全部用户信息！")
-        extend = kwarg.get("extend")
+        extend = kwargs.get("extend")
         params = {
-            "bk_username": self.this_request.super_username,
-            "username": kwarg.get("username"),
-            "chname": kwarg.get("chname"),
-            "search_username": kwarg.get("search_username"),
-            "search_chname": kwarg.get("search_chname"),
-            "search_username_or_chname": kwarg.get("search_username_or_chname"),
+            "bk_username": self.super_username,
+            "username": kwargs.get("username"),
+            "chname": kwargs.get("chname"),
+            "search_username": kwargs.get("search_username"),
+            "search_chname": kwargs.get("search_chname"),
+            "search_username_or_chname": kwargs.get("search_username_or_chname"),
             "extend": extend,
         }
         if extend:
             self.user_headers.update(self.extend_headers)
-        status, user_list, mess = self.this_request._request(self.rbac_get_all_user, "GET", params=params, body={})
+        status, user_list, mess = self.call(fun_name, "GET", params=params, body={})
         if not status:
             return self.to_json(False, mess)
 
@@ -68,21 +70,113 @@ class RbacApi(BaseObj):
             return self.to_json(False, "获取当前资源数据为空", result)
         return self.to_json(True, mess, result)
 
-    def opsany_rbac_get_my_user_info(self, **kwarg):
-        extend = kwarg.get("extend")
+    def opsany_rbac_get_my_user_info(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        extend = kwargs.get("extend")
         params = {
-            "bk_username": self.this_request.super_username,
-            "username": self.this_request.bk_username,
+            "bk_username": self.super_username,
+            "username": self.bk_username,
             "extend": extend,
         }
         if extend:
             self.user_headers.update(self.extend_headers)
-        status, user_list, mess = self.this_request._request(self.rbac_get_all_user, "GET", params=params, body={})
+        status, user_list, mess = self.call(fun_name, "GET", params=params, body={}, timeout=tool_timeout)
         if not status:
             return self.to_json(False, mess)
 
         if self.real_data_type == "table_header":
             result = {"columns": self.user_headers, "rows": user_list}
+        else:
+            result = []
+            new_user_list = []
+            for i in user_list:
+                new_user_list.append([str(i.get(h) or "") for h in self.user_headers])
+            for row in new_user_list:
+                row_dict = dict(zip(self.user_headers.values(), row))
+                result.append(row_dict)
+        if not result:
+            return self.to_json(False, "获取当前资源数据为空", result)
+        return self.to_json(True, mess, result)
+
+    def opsany_rbac_create_user(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        user_info_list = kwargs.get("user_info_list") or []
+        body = {
+            "user_info_list": user_info_list,
+        }
+        status, user_list, mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
+        if not status:
+            return self.to_json(False, mess)
+
+        result_headers = {
+            "success_dict": "创建成功信息",
+            "error_dict": "创建失败信息",
+        }
+
+        if self.real_data_type == "table_header":
+            result = {"columns": result_headers, "rows": user_list}
+        else:
+            result = []
+            new_user_list = []
+            for i in user_list:
+                new_user_list.append([str(i.get(h) or "") for h in self.user_headers])
+            for row in new_user_list:
+                row_dict = dict(zip(self.user_headers.values(), row))
+                result.append(row_dict)
+        if not result:
+            return self.to_json(False, "获取当前资源数据为空", result)
+        return self.to_json(True, mess, result)
+
+    def opsany_rbac_update_user(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        user_info_list = kwargs.get("user_info_list")
+        body = {
+            "user_info_list": user_info_list,
+        }
+        status, user_list, mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
+        if not status:
+            return self.to_json(False, mess)
+
+        result_headers = {
+            "success_dict": "修改成功信息",
+            "error_dict": "修改失败信息",
+        }
+
+        if self.real_data_type == "table_header":
+            result = {"columns": result_headers, "rows": user_list}
+        else:
+            result = []
+            new_user_list = []
+            for i in user_list:
+                new_user_list.append([str(i.get(h) or "") for h in self.user_headers])
+            for row in new_user_list:
+                row_dict = dict(zip(self.user_headers.values(), row))
+                result.append(row_dict)
+        if not result:
+            return self.to_json(False, "获取当前资源数据为空", result)
+        return self.to_json(True, mess, result)
+
+    def opsany_rbac_delete_user(self, **kwargs):
+        fun_name = inspect.currentframe().f_code.co_name
+        tool_timeout = kwargs.pop("tool_timeout", 60)
+        user_info_list = kwargs.get("user_info_list")
+        body = {
+            "user_info_list": user_info_list,
+        }
+        status, user_list, mess = self.call(fun_name, "POST", params={}, body=body, timeout=tool_timeout)
+        if not status:
+            return self.to_json(False, mess)
+
+        result_headers = {
+            "success_dict": "删除成功信息",
+            "error_dict": "删除失败信息",
+        }
+
+        if self.real_data_type == "table_header":
+            result = {"columns": result_headers, "rows": user_list}
         else:
             result = []
             new_user_list = []

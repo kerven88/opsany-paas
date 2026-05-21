@@ -37,6 +37,10 @@ DATABASES.update(
     }
 )
 
+INSTALLED_APPS += (
+    'channels'
+)
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",

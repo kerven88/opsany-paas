@@ -25,8 +25,10 @@ class UpdateLinkInst(Component):
   	| 字段    | 类型     | 必选   | 描述       |
 	| ----- | ------ | ---- | -------- |
 	| method | str | 是    | 请求方法（POST, DELETE） |
-	| model_code | str | 是    | 模型名code |
-	| model_code_name | str | 是    | 模型名 |
+	| api_from | str | 否    | 接口请求来源 默认 API调用 |
+	| code | str | 否    | 实例ID 单独使用 不再需要model_code和model_code_name |
+	| model_code | str | 否    | 模型名code 和 model_code_name 配合使用|
+	| model_code_name | str | 否    | 模型名 和 model_code 配合使用 |
 	| field_code | str | 是    | 字段code(增加) |
 	| target_code_list | list | 是    | 字段code（删除） |
 	| target_code | int | 是    | 关联的目标code |
@@ -51,8 +53,10 @@ class UpdateLinkInst(Component):
 
     # Form处理参数校验
     class Form(BaseComponentForm):
-        model_code = forms.Field()
-        model_code_name = forms.Field()
+        api_from = forms.Field(required=False)
+        code = forms.Field(required=False)
+        model_code = forms.Field(required=False)
+        model_code_name = forms.Field(required=False)
         field_code = forms.Field()
         target_code_list = forms.Field(required=False)
         target_code = forms.Field(required=False)
@@ -60,7 +64,7 @@ class UpdateLinkInst(Component):
         # pass
         # clean方法返回的数据可通过组件的form_data属性获取
         def clean(self):
-            return self.get_cleaned_data_when_exist(keys=["model_code", "model_code_name", "field_code", "target_code", "method", "target_code_list"])
+            return self.get_cleaned_data_when_exist(keys=["api_from", "model_code", "model_code_name", "code", "field_code", "target_code", "method", "target_code_list"])
 
     # 组件处理入口
     def handle(self):

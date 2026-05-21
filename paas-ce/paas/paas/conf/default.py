@@ -42,7 +42,7 @@ APP_ID = 'bk_paas'
 SECRET_KEY = 'o7(025idh*fj@)ohujum-ilfxl^n=@d&$xz!_$$7s$8jopd5r#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 

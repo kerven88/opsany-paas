@@ -6,7 +6,7 @@ from blueapps.conf.default_settings import *  # noqa
 
 # 请在这里加入你的自定义 APP
 INSTALLED_APPS += (
-    'channels',
+    # 'channels',  # prod配置文件已经添加
     'bastion',
     # 'elasticapm.contrib.django',
 )

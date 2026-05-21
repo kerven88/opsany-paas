@@ -11,7 +11,8 @@ Unless required by applicable law or agreed to in writing, software distributed 
 from django.urls import include, path
 
 from bkaccount import views, views_api
-
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 urlpatterns = [
     # 用户信息相关
@@ -22,11 +23,11 @@ urlpatterns = [
             path('query/', views.UserListPage.as_view()),
         ])),
         # [post] user create
-        path('', views.UserView.as_view()),
+        path('', method_decorator(csrf_exempt, name='dispatch')(views.UserView.as_view())),
         # [put/delete] userinfo modify / user delete
-        path('<int:user_id>/', views.UserView.as_view()),
+        path('<int:user_id>/', method_decorator(csrf_exempt, name='dispatch')(views.UserView.as_view())),
         # [put] user password
-        path('<int:user_id>/password/', views.UserPasswordView.as_view()),
+        path('<int:user_id>/password/', method_decorator(csrf_exempt, name='dispatch')(views.UserPasswordView.as_view())),
         # export/import users
         path('export/', views.UserExportView.as_view()),
         path('import/', views.UserImportView.as_view()),

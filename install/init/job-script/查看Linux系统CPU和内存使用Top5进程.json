@@ -1,0 +1,8 @@
+{
+	"script_name": "查看Linux系统CPU和内存使用Top5进程",
+	"version": "admin-20220528155519044541",
+	"version_remarks": "初始化内置，用于实时抓取并展示 Linux 系统中 CPU 和内存消耗最大的前 5 个进程。脚本通过 ps 命令自定义输出格式，精准提取 PID、资源占用率、常驻内存(RSS)及完整命令行，并按降序排列。适用于系统卡顿排查、定位高资源占用的异常进程。",
+	"script_type": "sh",
+	"visible": "2",
+	"script": "#!/bin/bash\n# Description:  Get Linux CPU Mem Usage Top 5\n\n# Get Data/Time\nCTIME=$(date \"+%Y-%m-%d %H-%M-%S\")\n\n# CPU\necho -e \"\\033[33m---------------- $CTIME CPU Usage Top 5 ----------------\\033[0m\"\nps -aux | sort -k3nr | head -5\n\n# Mem\necho -e \"\\033[33m---------------- $CTIME Mem Usage Top 5 ----------------\\033[0m\"\nps -aux | sort -k4nr | head -5\n"
+}
